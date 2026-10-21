@@ -23,16 +23,12 @@ public class AddressController {
         return new ResponseEntity<>(address, HttpStatus.CREATED);
     }
 
-    @GetMapping("/get_address/{addressId}")
-    public ResponseEntity<Address> getAddress(@PathVariable String addressId) {
-        Address address = addressManagementService.getAddress(addressId);
-        return new ResponseEntity<>(address, HttpStatus.OK);
-    }
-
-    @GetMapping("/get_all_address")
-    public ResponseEntity<List<Address>> getAllAddresses() {
-        List<Address> addresses = addressManagementService.getAllAddresses();
-        return new ResponseEntity<>(addresses, HttpStatus.OK);
+    @GetMapping("/get_address")
+    public ResponseEntity<?> getAddresses(@RequestParam(required = false) String addressId) {
+        if (addressId != null) {
+            return new ResponseEntity<>(addressManagementService.getAddress(addressId), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(addressManagementService.getAllAddresses(), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete_address/{addressId}")

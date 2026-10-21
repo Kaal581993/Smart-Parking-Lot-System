@@ -26,32 +26,21 @@ public class VehicleOwnerController {
     }
 
 
-    @GetMapping("/get_vehicle_owner_by_id/{vehicleOwnerId}")
-    public ResponseEntity<VehicleOwner> getVehicleOwnerById(@PathVariable String vehicleOwnerId) {
-        return new ResponseEntity<>(
-                vehicleOwnerService.getVehicleOwnerById(vehicleOwnerId),
-                org.springframework.http.HttpStatus.OK);
-    }
-
-    @GetMapping("/get_vehicle_owners_by_aadhaar_number/{aadhaarNumber}")
-    public ResponseEntity<VehicleOwner> getVehicleOwnerByAadhaarNumber(@PathVariable String aadhaarNumber) {
-        return new ResponseEntity<>(
-                vehicleOwnerService.getVehicleOwnerByAadhaarNumber(aadhaarNumber),
-                org.springframework.http.HttpStatus.OK);
-    }
-
-    @GetMapping("/get_vehicle_owners_by_drv_license_number/{licenseNumber}")
-    public ResponseEntity<VehicleOwner> getVehicleOwnerByDrvLicenseNo(@PathVariable String licenseNumber) {
-        return new ResponseEntity<>(
-                vehicleOwnerService.getVehicleOwnerByLicenseNumber(licenseNumber),
-                org.springframework.http.HttpStatus.OK);
-    }
-
-    @GetMapping("/get_all_vehicle_owners")
-    public ResponseEntity<List<VehicleOwner>> getAllVehicleOwners() {
-        return new ResponseEntity<>(
-                vehicleOwnerService.getVehicleOwnerList(),
-                org.springframework.http.HttpStatus.OK);
+    @GetMapping("/get_vehicle_owner")
+    public ResponseEntity<?> getVehicleOwners(
+            @RequestParam(required = false) String vehicleOwnerId,
+            @RequestParam(required = false) String aadhaarNumber,
+            @RequestParam(required = false) String licenseNumber) {
+        if (vehicleOwnerId != null) {
+            return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerById(vehicleOwnerId), org.springframework.http.HttpStatus.OK);
+        }
+        if (aadhaarNumber != null) {
+            return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerByAadhaarNumber(aadhaarNumber), org.springframework.http.HttpStatus.OK);
+        }
+        if (licenseNumber != null) {
+            return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerByLicenseNumber(licenseNumber), org.springframework.http.HttpStatus.OK);
+        }
+        return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerList(), org.springframework.http.HttpStatus.OK);
     }
 
     @DeleteMapping("/delete_vehicle_owner/{vehicleOwnerId}")

@@ -29,18 +29,12 @@ public class AadhaarController {
     }
 
 
-    @GetMapping("/get_owner_aadhaar/{ownerAadhaarId}")
-    public ResponseEntity<OwnerAadhaar> getOwnerAadhaar(@PathVariable String ownerAadhaarId) {
-        return new ResponseEntity<>(
-                aadhaarManagementService.getOwnerAadhaarID(ownerAadhaarId),
-                org.springframework.http.HttpStatus.OK);
-    }
-
-    @GetMapping("/get_all_aadhaar")
-    public ResponseEntity<List<OwnerAadhaar>> getAllAadhaars() {
-        return new ResponseEntity<>(
-                aadhaarManagementService.getOwnerAadhaarList(),
-                org.springframework.http.HttpStatus.OK);
+    @GetMapping("/get_aadhaar")
+    public ResponseEntity<?> getAadhaars(@RequestParam(required = false) String ownerAadhaarId) {
+        if (ownerAadhaarId != null) {
+            return new ResponseEntity<>(aadhaarManagementService.getOwnerAadhaarID(ownerAadhaarId), org.springframework.http.HttpStatus.OK);
+        }
+        return new ResponseEntity<>(aadhaarManagementService.getOwnerAadhaarList(), org.springframework.http.HttpStatus.OK);
     }
 
     @DeleteMapping("/delete_aadhaar/{ownerAadhaarId}")

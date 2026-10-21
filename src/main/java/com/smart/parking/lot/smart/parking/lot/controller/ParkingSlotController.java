@@ -25,13 +25,11 @@ public class ParkingSlotController {
         //parkingSlotService.createParkingSlot(parkingSlot);
     }
 
-    @GetMapping("/get_parking_slot_details/{parkingSlotId}")
-    public ResponseEntity<ParkingSlot> getParkingSlot(@PathVariable String parkingSlotId) {
-        return new ResponseEntity<>(parkingSlotService.getParkingSlotById(parkingSlotId), org.springframework.http.HttpStatus.OK);
-    }
-
-    @GetMapping("/get_all_parking_slots")
-    public ResponseEntity<List<ParkingSlot>> getAllParkingSlots() {
+    @GetMapping("/get_parking_slot")
+    public ResponseEntity<?> getParkingSlots(@RequestParam(required = false) String parkingSlotId) {
+        if (parkingSlotId != null) {
+            return new ResponseEntity<>(parkingSlotService.getParkingSlotById(parkingSlotId), org.springframework.http.HttpStatus.OK);
+        }
         return new ResponseEntity<>(parkingSlotService.getAllParkingSlots(), org.springframework.http.HttpStatus.OK);
     }
 

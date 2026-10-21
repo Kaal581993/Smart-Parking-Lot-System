@@ -22,15 +22,12 @@ public class LicenseController {
                 org.springframework.http.HttpStatus.CREATED);
     }
 
-    @GetMapping("/get_license/{licenseId}")
-    public ResponseEntity<LicenseNo> getLicenseById(@PathVariable String licenseId) {
-        return new ResponseEntity<>(licenseManagementService.getLicenseById(licenseId),
-                org.springframework.http.HttpStatus.OK);
-    }
-
-    @GetMapping("/get_all_license")
-    public ResponseEntity<List<LicenseNo>> getAllLicenses() {
-        return new ResponseEntity<>(licenseManagementService.getLicenseList(),org.springframework.http.HttpStatus.OK);
+    @GetMapping("/get_license")
+    public ResponseEntity<?> getLicenses(@RequestParam(required = false) String licenseId) {
+        if (licenseId != null) {
+            return new ResponseEntity<>(licenseManagementService.getLicenseById(licenseId), org.springframework.http.HttpStatus.OK);
+        }
+        return new ResponseEntity<>(licenseManagementService.getLicenseList(), org.springframework.http.HttpStatus.OK);
     }
 
     @DeleteMapping("/delete_license/{licenseId}")

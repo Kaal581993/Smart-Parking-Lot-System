@@ -24,18 +24,12 @@ public class VehicleDetailsController {
                 org.springframework.http.HttpStatus.CREATED);
     }
 
-    @GetMapping("/get_vehicle_details_by_id")
-    public ResponseEntity<VehicleDetails> getVehicleDetailsById(@PathVariable String vehicleDetailsId) {
-        return new ResponseEntity<>(
-                vehicleDetailsService.getVehicleDetailsById(vehicleDetailsId),
-                org.springframework.http.HttpStatus.OK);
-    }
-
-    @GetMapping("/get_all_vehicle_details")
-    public ResponseEntity<List<VehicleDetails>> getAllVehicleDetails() {
-        return new ResponseEntity<>(
-                vehicleDetailsService.getVehicleDetailsList(),
-                org.springframework.http.HttpStatus.OK);
+    @GetMapping("/get_vehicle_details")
+    public ResponseEntity<?> getVehicleDetails(@RequestParam(required = false) String vehicleDetailsId) {
+        if (vehicleDetailsId != null) {
+            return new ResponseEntity<>(vehicleDetailsService.getVehicleDetailsById(vehicleDetailsId), org.springframework.http.HttpStatus.OK);
+        }
+        return new ResponseEntity<>(vehicleDetailsService.getVehicleDetailsList(), org.springframework.http.HttpStatus.OK);
     }
 
     @DeleteMapping("/delete_vehicle_details/{vehicleDetailsId}")

@@ -29,18 +29,12 @@ public class VehicleTypeController {
                 org.springframework.http.HttpStatus.OK);
     }
 
-    @GetMapping("/get_vehicle_type_by_id/{vehicleTypeId}")
-    public ResponseEntity<VehicleType> getVehicleTypeById(@PathVariable String vehicleTypeId) {
-        return new ResponseEntity<>(
-                vehicleTypeService.getVehicleTypeById(vehicleTypeId),
-                org.springframework.http.HttpStatus.OK);
-    }
-
-    @GetMapping("/get_all_vehicle_types")
-    public ResponseEntity<Iterable<VehicleType>> getAllVehicleTypes() {
-        return new ResponseEntity<>(
-                vehicleTypeService.getVehicleTypeList(),
-                org.springframework.http.HttpStatus.OK);
+    @GetMapping("/get_vehicle_type")
+    public ResponseEntity<?> getVehicleTypes(@RequestParam(required = false) String vehicleTypeId) {
+        if (vehicleTypeId != null) {
+            return new ResponseEntity<>(vehicleTypeService.getVehicleTypeById(vehicleTypeId), org.springframework.http.HttpStatus.OK);
+        }
+        return new ResponseEntity<>(vehicleTypeService.getVehicleTypeList(), org.springframework.http.HttpStatus.OK);
     }
 
     @DeleteMapping("/delete_vehicle_type/{vehicleTypeId}")
