@@ -1,0 +1,46 @@
+package com.smart.parking.lot.smart.parking.lot.controller;
+
+import com.smart.parking.lot.smart.parking.lot.entity.VehicleDetails;
+import com.smart.parking.lot.smart.parking.lot.service.VehicleDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/vehicle_details")
+
+public class VehicleDetailsController {
+
+    @Autowired
+    private VehicleDetailsService vehicleDetailsService;
+
+
+    @PostMapping("/add_vehicle_details")
+    public ResponseEntity<VehicleDetails> addVehicleDetails(@RequestBody VehicleDetails vehicleDetails) {
+        return new ResponseEntity<>(
+                vehicleDetailsService.createVehicleDetails(vehicleDetails),
+                org.springframework.http.HttpStatus.CREATED);
+    }
+
+    @GetMapping("/get_vehicle_details_by_id")
+    public ResponseEntity<VehicleDetails> getVehicleDetailsById(@PathVariable String vehicleDetailsId) {
+        return new ResponseEntity<>(
+                vehicleDetailsService.getVehicleDetailsById(vehicleDetailsId),
+                org.springframework.http.HttpStatus.OK);
+    }
+
+    @GetMapping("/get_all_vehicle_details")
+    public ResponseEntity<List<VehicleDetails>> getAllVehicleDetails() {
+        return new ResponseEntity<>(
+                vehicleDetailsService.getVehicleDetailsList(),
+                org.springframework.http.HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete_vehicle_details/{vehicleDetailsId}")
+    public ResponseEntity<Void> deleteVehicleDetails(@PathVariable String vehicleDetailsId) {
+        vehicleDetailsService.deleteVehicleDetails(vehicleDetailsId);
+        return new ResponseEntity<>(org.springframework.http.HttpStatus.NO_CONTENT);
+    }
+}
