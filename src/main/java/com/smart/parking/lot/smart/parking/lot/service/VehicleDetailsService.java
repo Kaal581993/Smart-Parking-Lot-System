@@ -44,9 +44,27 @@ public class VehicleDetailsService {
     }
 
     public org.springframework.data.domain.Page<VehicleDetails> getVehicleDetailsList(org.springframework.data.domain.Pageable pageable) {
-        return vehicleDetailsRepository.findAll(pageable);
+        return vehicleDetailsRepository.findByNotDeleted(pageable);
     }
 
+    public com.smart.parking.lot.smart.parking.lot.dto.BatchVehicleResponse batchCreateVehicles(com.smart.parking.lot.smart.parking.lot.dto.BatchVehicleRequest request) {
+        List<String> created = new java.util.ArrayList<>();
+        List<String> duplicate = new java.util.ArrayList<>();
+        List<String> invalid = new java.util.ArrayList<>();
+        for (com.smart.parking.lot.smart.parking.lot.entity.VehicleDetails v : request.vehicles()) {
+            if (v.getNumberPlate() == null || v.getOwner() == null) {
+                invalid.add(v.getNumberPlate() == null ? "unknown" : v.getNumberPlate());
+                continue;
+            }
+            if (vehicleDetailsRepository.existsByNumberPlate(v.getNumberPlate())) {
+                duplicate.add(v.getNumberPlate());
+                continue;
+            }
+            vehicleDetailsRepository.save(v);
+            created.add(v.getNumberPlate());
+        }
+        return new com.smart.parking.lot.smart.parking.lot.dto.BatchVehicleResponse(created, duplicate, invalid);
+    }
     public void deleteVehicleDetails(String vehicleDetailsId) {
         vehicleDetailsRepository.deleteById(vehicleDetailsId);
     }

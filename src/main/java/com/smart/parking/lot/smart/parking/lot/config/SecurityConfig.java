@@ -19,6 +19,7 @@ public class SecurityConfig {
                         // Allow anyone to access the H2 console path
                         .requestMatchers(PathRequest.toH2Console()).permitAll()
                         .requestMatchers(
+
                                 "/address/add_address",
                                 "/address/get_address/{addressId}",
                                 "/address/get_all_address",

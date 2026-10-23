@@ -20,6 +20,6 @@ public interface ParkingSlotRepository extends JpaRepository<ParkingSlot, String
     Optional<ParkingSlot> findByIdWithLock(@Param("slotId") String slotId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT s FROM ParkingSlot s WHERE s.isAvailable = true AND s.isActive = true")
+    @Query("SELECT s FROM ParkingSlot s WHERE s.isAvailable = true AND s.isActive = true AND s.isDeleted = false")
     List<ParkingSlot> findAvailableSlotsWithLock();
 }

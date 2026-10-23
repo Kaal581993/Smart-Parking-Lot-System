@@ -11,6 +11,9 @@ import org.springframework.stereotype.Repository;
 public interface VehicleDetailsRepository extends JpaRepository<VehicleDetails, String> {
     boolean existsByNumberPlate(String numberPlate);
 
+    @Query("SELECT v FROM VehicleDetails v WHERE v.isDeleted = false")
+    org.springframework.data.domain.Page<VehicleDetails> findByNotDeleted(org.springframework.data.domain.Pageable pageable);
+
     @Query("SELECT v FROM VehicleDetails v WHERE v.owner.aadhaar.aadhaarNo = :aadhaarNumber")
     java.util.List<VehicleDetails> findByOwnerAadhaarNumber(@Param("aadhaarNumber") String aadhaarNumber);
 }

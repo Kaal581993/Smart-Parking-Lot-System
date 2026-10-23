@@ -179,3 +179,10 @@ curl -X GET "http://localhost:8080/actuator/health"
 curl -X GET "http://localhost:8080/actuator/metrics"
 
 curl -X GET "http://localhost:8080/actuator/info"
+
+
+# Batch Vehicle Creation
+
+curl -X POST http://localhost:8080/vehicles/batch \
+-H "Content-Type: application/json" \
+-d '{"vehicles":[{"numberPlate":"MH04AB1234","vehicleType":"{vehicleTypeId}","vehicleBrand":"Honda","vehicleModel":"City","owner":"{owner}"}]}'

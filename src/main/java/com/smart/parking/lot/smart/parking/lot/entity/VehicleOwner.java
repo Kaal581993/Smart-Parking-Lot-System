@@ -53,7 +53,7 @@ public class VehicleOwner {
      private Date vehicleOwnerDOB;
 
 
-     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+     @OneToMany(mappedBy = "owner", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
      private List<VehicleDetails> vehicles;
 
      @OneToOne
