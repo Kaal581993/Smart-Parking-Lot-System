@@ -26,7 +26,7 @@ public class ParkingSlotService {
     private SlotService slotService;
 
     public ParkingSlot createParkingSlot(ParkingSlot parkingSlot) {
-        return parkingSlotRepository.save(parkingSlot);
+        return slotService.createSlot(parkingSlot);
     }
 
     public List<ParkingSlot> getAllParkingSlots() {

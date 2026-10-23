@@ -9,8 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.Duration;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "parking_slot")
@@ -28,6 +28,10 @@ public class ParkingSlot {
      @NotNull
      private String slotNumber;
 
+     @ManyToOne
+     @JoinColumn(name = "vehicle_type_allowed_id")
+     private VehicleType vehicleTypeAllowed;
+
      private double costPerHour;
 
      @JsonFormat(pattern = "dd/MM/yyyy")
@@ -36,11 +40,18 @@ public class ParkingSlot {
      @JsonFormat(pattern = "dd/MM/yyyy")
      private Date checkOutTime;
 
-     private int floorLimit;
+     @NotNull
      private int floorNo;
 
+     @NotNull
+     private int floorLimit;
+
+     @NotNull
      private int floorSlotCapacity;
 
-     private boolean isAvailable;
-     private boolean isDeleted;
+     private boolean isAvailable = true;
+     private boolean isActive = true;
+
+     @OneToMany(mappedBy = "parkingSlot", cascade = CascadeType.ALL, orphanRemoval = false)
+     private List<ParkingTicket> tickets;
 }

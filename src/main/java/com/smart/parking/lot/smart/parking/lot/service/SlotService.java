@@ -17,8 +17,17 @@ public class SlotService {
 
     @Transactional
     public ParkingSlot createSlot(ParkingSlot slot) {
+        if (slot.getFloorNo() <= 0) {
+            throw new IllegalArgumentException("floorNo must be greater than 0");
+        }
+        if (slot.getFloorSlotCapacity() <= 0) {
+            throw new IllegalArgumentException("floorSlotCapacity must be greater than 0");
+        }
+        if (slot.getSlotNumber() == null || slot.getSlotNumber().isBlank()) {
+            throw new IllegalArgumentException("slotNumber is required");
+        }
         slot.setAvailable(true);
-        slot.setDeleted(false);
+        slot.setActive(true);
         return parkingSlotRepository.save(slot);
     }
 
@@ -29,7 +38,7 @@ public class SlotService {
 
     public List<ParkingSlot> getAvailableSlots() {
         return parkingSlotRepository.findAll().stream()
-                .filter(s -> s.isAvailable() && !s.isDeleted())
+                .filter(s -> s.isAvailable() && s.isActive())
                 .toList();
     }
 
