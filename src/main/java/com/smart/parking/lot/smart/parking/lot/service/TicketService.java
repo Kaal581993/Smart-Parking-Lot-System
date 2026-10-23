@@ -72,6 +72,19 @@ public class TicketService {
         return parkingTicketRepository.findByParkingSlot_SlotId(slotId);
     }
 
+    @Transactional
+    public ParkingTicket processPayment(String ticketId, double amount) {
+        ParkingTicket ticket = getTicketById(ticketId);
+        double remaining = ticket.getPendingDues() - amount;
+        if (remaining <= 0) {
+            ticket.setPaidStatus(com.smart.parking.lot.smart.parking.lot.entity.PaymentStatus.PAID);
+            ticket.setPendingDues(0);
+        } else {
+            ticket.setPaidStatus(com.smart.parking.lot.smart.parking.lot.entity.PaymentStatus.PARTIALLY_PAID);
+            ticket.setPendingDues(remaining);
+        }
+        return parkingTicketRepository.save(ticket);
+    }
     public List<ParkingTicket> scanOverstayed() {
         OverstayScanVisitor visitor = new OverstayScanVisitor();
         for (ParkingTicket t : parkingTicketRepository.findAll()) {

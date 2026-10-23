@@ -36,4 +36,8 @@ public class AddressManagementService {
     public void deleteAddress(String addressId) {
         addressRepository.deleteById(addressId);
     }
+
+    public Address updateAddress(Address address) {
+        return addressRepository.save(address);
+    }
 }

@@ -1,7 +1,10 @@
 package com.smart.parking.lot.smart.parking.lot.controller;
 
+import com.smart.parking.lot.smart.parking.lot.dto.CheckInBatchRequest;
+import com.smart.parking.lot.smart.parking.lot.dto.CheckInBatchResponse;
 import com.smart.parking.lot.smart.parking.lot.dto.CheckInRequest;
 import com.smart.parking.lot.smart.parking.lot.dto.CheckOutRequest;
+import com.smart.parking.lot.smart.parking.lot.dto.PaymentRequest;
 import com.smart.parking.lot.smart.parking.lot.entity.ParkingTicket;
 import com.smart.parking.lot.smart.parking.lot.facade.ParkingFacade;
 import com.smart.parking.lot.smart.parking.lot.service.TicketService;
@@ -32,9 +35,25 @@ public class ParkingTicketController {
         return new ResponseEntity<>(parkingFacade.checkOut(request), HttpStatus.OK);
     }
 
+    @PostMapping("/{ticketId}/pay")
+    public ResponseEntity<ParkingTicket> payTicket(@PathVariable String ticketId,
+                                                    @Valid @RequestBody PaymentRequest request) {
+        return new ResponseEntity<>(ticketService.processPayment(ticketId, request.amount()), HttpStatus.OK);
+    }
+
+    @PostMapping("/batch-check-in")
+    public ResponseEntity<CheckInBatchResponse> batchCheckIn(@Valid @RequestBody CheckInBatchRequest request) {
+        return new ResponseEntity<>(parkingFacade.batchCheckIn(request), HttpStatus.CREATED);
+    }
+
     @PostMapping("/undo-last-checkin")
     public ResponseEntity<Void> undoLastCheckIn() {
         parkingFacade.undoLastCheckIn();
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/{ticketId}")
+    public ResponseEntity<ParkingTicket> getTicket(@PathVariable String ticketId) {
+        return new ResponseEntity<>(ticketService.getTicketById(ticketId), HttpStatus.OK);
     }
 }

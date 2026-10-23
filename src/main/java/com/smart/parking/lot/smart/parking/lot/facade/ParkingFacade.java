@@ -1,6 +1,9 @@
 package com.smart.parking.lot.smart.parking.lot.facade;
 
+import com.smart.parking.lot.smart.parking.lot.dto.CheckInBatchRequest;
+import com.smart.parking.lot.smart.parking.lot.dto.CheckInBatchResponse;
 import com.smart.parking.lot.smart.parking.lot.dto.CheckInRequest;
+import com.smart.parking.lot.smart.parking.lot.dto.CheckInBatchResponse;
 import com.smart.parking.lot.smart.parking.lot.dto.CheckOutRequest;
 import com.smart.parking.lot.smart.parking.lot.entity.CurrentTicketState;
 import com.smart.parking.lot.smart.parking.lot.entity.ParkingSlot;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class ParkingFacade extends CheckInCheckOutTemplate {
@@ -153,5 +157,55 @@ public class ParkingFacade extends CheckInCheckOutTemplate {
         ticket.setActive(false);
         ticketService.saveTicket(ticket);
         slotService.markSlotAvailable(memento.getSlotId());
+    }
+
+    @Transactional
+    public CheckInBatchResponse batchCheckIn(CheckInBatchRequest request) {
+        List<String> added = new java.util.ArrayList<>();
+        List<String> alreadyParked = new java.util.ArrayList<>();
+        List<String> notFound = new java.util.ArrayList<>();
+        List<String> unavailable = new java.util.ArrayList<>();
+
+        for (String vehicleId : new java.util.LinkedHashSet<>(request.vehicleIds())) {
+            VehicleDetails vehicle = vehicleDetailsService.getVehicleDetailsById(vehicleId);
+            if (vehicle == null) {
+                notFound.add(vehicleId);
+                continue;
+            }
+            if (ticketService.isVehicleAlreadyParked(vehicleId)) {
+                alreadyParked.add(vehicleId);
+                continue;
+            }
+            ParkingSlot slot = slotAllocationService.allocate(vehicle.getVehicleType(), request.slotId() == null ? null : "BEST_FIT");
+            // if a specific slotId was requested, use it
+            if (request.slotId() != null) {
+                try {
+                    slot = slotService.getSlotById(request.slotId());
+                } catch (Exception e) {
+                    unavailable.add(request.slotId());
+                    continue;
+                }
+                if (!slot.isAvailable() || ticketService.isSlotOccupied(request.slotId())) {
+                    unavailable.add(request.slotId());
+                    continue;
+                }
+            }
+            if (slot == null) {
+                unavailable.add(vehicleId);
+                continue;
+            }
+            ParkingTicket ticket = new ParkingTicket();
+            ticket.setParkingSlot(slot);
+            ticket.setVehicleDetails(vehicle);
+            ticket.setVehicleType(vehicle.getVehicleType());
+            ticket.setVehicleOwner(vehicle.getOwner());
+            ticket.setStatus(CurrentTicketState.ACTIVE);
+            ticket.setActive(true);
+            ticket.setCheckInTime(new Date());
+            ticketService.saveTicket(ticket);
+            slotService.markSlotOccupied(slot.getSlotId());
+            added.add(vehicleId);
+        }
+        return new CheckInBatchResponse(added, alreadyParked, notFound, unavailable);
     }
 }

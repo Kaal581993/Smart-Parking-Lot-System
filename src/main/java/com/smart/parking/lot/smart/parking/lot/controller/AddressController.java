@@ -32,9 +32,14 @@ public class AddressController {
         return new ResponseEntity<>(addressManagementService.getAllAddresses(), HttpStatus.OK);
     }
 
+    @PutMapping("/update_address")
+    public ResponseEntity<Address> updateAddress(@Valid @RequestBody Address address) {
+        return new ResponseEntity<>(addressManagementService.updateAddress(address), HttpStatus.OK);
+    }
+
     @DeleteMapping("/delete_address/{addressId}")
     public ResponseEntity<Void> deleteAddress(@PathVariable String addressId) {
         addressManagementService.deleteAddress(addressId);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

@@ -1,59 +1,59 @@
-#Address
+# Address
 
 curl -X POST http://localhost:8080/address/add_address \
 -H "Content-Type: application/json" \
--d '{"flatNoHouseNo":"A/204","societyNameAptName":"Gracy Arc co.op. hsg","areaName":"khau gali rd.","townOrCityName":"Bhayandar West","countryName":"India","pincode":"401101"}'
-
-curl -X POST http://localhost:8080/address/add_address \
--H "Content-Type: application/json" \
--d '{"flatNoHouseNo":"A/301","societyNameAptName":"Gracy Arc co.op. hsg","areaName":"khau gali rd.","townOrCityName":"Bhayandar West","countryName":"India","pincode":"401101"}'
+-d '{"flatNoHouseNo":"A/204","societyNameAptName":"Gracy Arc co.op. hsg","areaName":"khau gali rd.","townOrCityName":"Bhayandar West","countryName":"India","pincode":"401101","stateCode":"MH"}'
 
 curl -X GET "http://localhost:8080/address/get_address"
 
 curl -X GET "http://localhost:8080/address/get_address?addressId={addressId}"
 
+curl -X PUT http://localhost:8080/address/update_address \
+-H "Content-Type: application/json" \
+-d '{"addressId":"{addressId}","flatNoHouseNo":"A/204","societyNameAptName":"Gracy Arc co.op. hsg","areaName":"khau gali rd.","townOrCityName":"Bhayandar West","countryName":"India","pincode":"401101","stateCode":"MH"}'
+
 curl -X DELETE http://localhost:8080/address/delete_address/{addressId}
 
 
-#Aadhaar
+# Aadhaar
 
 curl -X POST http://localhost:8080/aadhaar/add_aadhaar \
 -H "Content-Type: application/json" \
--d '{"aadhaarNo":"592470644664","firstName":"Viral","lastName":"Prajapati","middleName":"Ganeshbhai","gender":"MALE","addressId":"66c39fbf-60b7-424d-a845-a3c34375721e","dateOfBirth":"08/05/1993","email":"viral.prajapati.nmims@gmail.com","panNo":"BXHPP7990R","phone":"9967126565"}'
-
-curl -X POST http://localhost:8080/aadhaar/add_aadhaar \
--H "Content-Type: application/json" \
--d '{"aadhaarNo":"592470677665","firstName":"Mithil","lastName":"Jain","middleName":"Prakash","gender":"MALE","addressId":"2c29c0df-af87-4174-8f01-cb5940d0cbcb","dateOfBirth":"16/07/1995","email":"mithil.jain.hinduja@gmail.com","panNo":"BXQQH8768D","phone":"7865664678"}'
+-d '{"aadhaarNo":"592470644664","firstName":"Viral","lastName":"Prajapati","middleName":"Ganeshbhai","gender":"MALE","addressId":"{addressId}","dateOfBirth":"08/05/1993","email":"viral.prajapati.nmims@gmail.com","panNo":"BXHPP7990R","phone":"9967126565"}'
 
 curl -X GET "http://localhost:8080/aadhaar/get_aadhaar"
 
 curl -X GET "http://localhost:8080/aadhaar/get_aadhaar?ownerAadhaarId={ownerAadhaarId}"
 
+curl -X PUT http://localhost:8080/aadhaar/update_aadhaar \
+-H "Content-Type: application/json" \
+-d '{"aadhaarNo":"592470644664","firstName":"Viral","lastName":"Prajapati","middleName":"Ganeshbhai","gender":"MALE","addressId":"{addressId}","dateOfBirth":"08/05/1993","email":"viral.prajapati.nmims@gmail.com","panNo":"BXHPP7990R","phone":"9967126565"}'
+
 curl -X DELETE http://localhost:8080/aadhaar/delete_aadhaar/{ownerAadhaarId}
 
 
-#License
+# License
 
 curl -X POST http://localhost:8080/driving_license/add_license \
 -H "Content-Type: application/json" \
--d '{"stateCode":"MH","rtoDistrictCode":"04","seriesCode":"2013002","serialNumber":"8755"}'
-
-curl -X POST http://localhost:8080/driving_license/add_license \
--H "Content-Type: application/json" \
--d '{"stateCode":"MH","rtoDistrictCode":"04","seriesCode":"2013008","serialNumber":"9795"}'
+-d '{"stateCode":"MH","rtoDistrictCode":"04","seriesCode":"AB","serialNumber":"1234"}'
 
 curl -X GET "http://localhost:8080/driving_license/get_license"
 
 curl -X GET "http://localhost:8080/driving_license/get_license?licenseId={licenseId}"
 
+curl -X PUT http://localhost:8080/driving_license/update_license \
+-H "Content-Type: application/json" \
+-d '{"licenseId":"{licenseId}","stateCode":"MH","rtoDistrictCode":"04","seriesCode":"AB","serialNumber":"1234"}'
+
 curl -X DELETE http://localhost:8080/driving_license/delete_license/{licenseId}
 
 
-#VehicleType
+# VehicleType
 
 curl -X POST http://localhost:8080/vehicle_type/add_vehicle_type \
 -H "Content-Type: application/json" \
--d '{"vehicleTypeName":"Car","vehicleTypeDescription":"Four wheeler"}'
+-d '{"typeName":"Car Sedan","hourlyRate":25.0,"dailyRate":120.0}'
 
 curl -X GET "http://localhost:8080/vehicle_type/get_vehicle_type"
 
@@ -61,53 +61,104 @@ curl -X GET "http://localhost:8080/vehicle_type/get_vehicle_type?vehicleTypeId={
 
 curl -X PUT http://localhost:8080/vehicle_type/update_vehicle_type/{vehicleTypeId} \
 -H "Content-Type: application/json" \
--d '{"vehicleTypeName":"Car","vehicleTypeDescription":"Updated"}'
+-d '{"typeName":"Car Sedan","hourlyRate":30.0,"dailyRate":150.0}'
 
 curl -X DELETE http://localhost:8080/vehicle_type/delete_vehicle_type/{vehicleTypeId}
 
 
-#VehicleDetails
+# VehicleOwner
 
-curl -X POST http://localhost:8080/vehicle_details/add_vehicle_details \
+curl -X POST http://localhost:8080/vehicle_owners \
 -H "Content-Type: application/json" \
--d '{"vehicleNumber":"MH04AB1234","vehicleTypeId":"{vehicleTypeId}"}'
+-d '{"vehicleOwnerName":"Viral Prajapati","vehicleOwnerPhone":9967126565,"vehicleOwnerEmail":"viral@example.com","aadhaarNo":"592470644664","licenseId":"{licenseId}","vehicleOwnerPanNo":"BXHPP7990R","vehicleOwnerDOB":"08/05/1993","addressId":"{addressId}","licenseExpiryDate":"08/05/2030","vehicleOwnerLedgerBalance":0.0,"vehicleOwnerDues":0.0}'
 
-curl -X GET "http://localhost:8080/vehicle_details/get_vehicle_details"
+curl -X GET "http://localhost:8080/vehicle_owners"
 
-curl -X GET "http://localhost:8080/vehicle_details/get_vehicle_details?vehicleDetailsId={vehicleDetailsId}"
+curl -X GET "http://localhost:8080/vehicle_owners?aadhaarNumber=592470644664"
 
-curl -X DELETE http://localhost:8080/vehicle_details/delete_vehicle_details/{vehicleDetailsId}
+curl -X GET "http://localhost:8080/vehicle_owners?licenseNumber={licenseId}"
 
+curl -X GET "http://localhost:8080/vehicle_owners/{aadhaarNumber}"
 
-#VehicleOwner
+curl -X GET "http://localhost:8080/vehicle_owners/{aadhaarNumber}/vehicles"
 
-curl -X POST http://localhost:8080/vehicle_owner/add_vehicle_owner \
+curl -X POST http://localhost:8080/vehicle_owners/{aadhaarNumber}/vehicles \
 -H "Content-Type: application/json" \
--d '{"aadhaarNo":"592470644664","licenseNumber":"MH0420130028755","vehicleDetailsId":"{vehicleDetailsId}"}'
+-d '{"numberPlate":"MH04AB1234","vehicleType":"{vehicleTypeId}","vehicleBrand":"Honda","vehicleModel":"City"}'
 
-curl -X GET "http://localhost:8080/vehicle_owner/get_vehicle_owner"
-
-curl -X GET "http://localhost:8080/vehicle_owner/get_vehicle_owner?vehicleOwnerId={vehicleOwnerId}"
-
-curl -X GET "http://localhost:8080/vehicle_owner/get_vehicle_owner?aadhaarNumber=592470644664"
-
-curl -X GET "http://localhost:8080/vehicle_owner/get_vehicle_owner?licenseNumber=MH0420130028755"
-
-curl -X PUT http://localhost:8080/vehicle_owner/update_vehicle_owner_by_aadhaar_number/592470644664 \
+curl -X PUT http://localhost:8080/vehicle_owners/{aadhaarNumber} \
 -H "Content-Type: application/json" \
--d '{"aadhaarNo":"592470644664","licenseNumber":"MH0420130028755","vehicleDetailsId":"{vehicleDetailsId}"}'
+-d '{"vehicleOwnerName":"Viral Prajapati","vehicleOwnerPhone":9967126565,"vehicleOwnerEmail":"viral@example.com","aadhaarNo":"592470644664","licenseId":"{licenseId}","vehicleOwnerPanNo":"BXHPP7990R","vehicleOwnerDOB":"08/05/1993","addressId":"{addressId}","licenseExpiryDate":"08/05/2030","vehicleOwnerLedgerBalance":0.0,"vehicleOwnerDues":0.0}'
 
-curl -X DELETE http://localhost:8080/vehicle_owner/delete_vehicle_owner/{vehicleOwnerId}
+curl -X DELETE http://localhost:8080/vehicle_owners/{aadhaarNumber}
 
 
-#ParkingSlot
+# Vehicles
 
-curl -X POST http://localhost:8080/parking_lot/add_parking_slot_details \
+curl -X POST http://localhost:8080/vehicles \
 -H "Content-Type: application/json" \
--d '{"slotNumber":"P1","slotStatus":"AVAILABLE"}'
+-d '{"numberPlate":"MH04AB1234","vehicleType":"{vehicleTypeId}","vehicleBrand":"Honda","vehicleModel":"City"}'
 
-curl -X GET "http://localhost:8080/parking_lot/get_parking_slot"
+curl -X GET "http://localhost:8080/vehicles"
 
-curl -X GET "http://localhost:8080/parking_lot/get_parking_slot?parkingSlotId={parkingSlotId}"
+curl -X GET "http://localhost:8080/vehicles?vehicleDetailsId={vehicleId}"
 
-curl -X DELETE http://localhost:8080/parking_lot/delete_parking_slot/{parkingSlotId}
+curl -X GET "http://localhost:8080/vehicles/{vehicleId}"
+
+curl -X GET "http://localhost:8080/vehicles/{vehicleId}/active-ticket"
+
+curl -X PUT http://localhost:8080/vehicles/{vehicleId} \
+-H "Content-Type: application/json" \
+-d '{"vehicleId":"{vehicleId}","numberPlate":"MH04AB1234","vehicleType":"{vehicleTypeId}","vehicleBrand":"Honda","vehicleModel":"City"}'
+
+curl -X DELETE http://localhost:8080/vehicles/{vehicleId}
+
+
+# ParkingSlot
+
+curl -X POST http://localhost:8080/parking_slots \
+-H "Content-Type: application/json" \
+-d '{"slotNumber":"P1","floorNo":1,"floorLimit":2,"floorSlotCapacity":10,"costPerHour":20.0,"vehicleTypeAllowed":"{vehicleTypeId}","allocationDuration":"PT2H"}'
+
+curl -X GET "http://localhost:8080/parking_slots"
+
+curl -X GET "http://localhost:8080/parking_slots?floorNo=1&available=true&vehicleType=Car%20Sedan"
+
+curl -X GET "http://localhost:8080/parking_slots/{slotId}"
+
+curl -X GET "http://localhost:8080/parking_slots/{slotId}/tickets"
+
+curl -X GET "http://localhost:8080/parking_slots/scan-overstay"
+
+curl -X PUT http://localhost:8080/parking_slots/{slotId} \
+-H "Content-Type: application/json" \
+-d '{"slotId":"{slotId}","slotNumber":"P1","floorNo":1,"floorLimit":2,"floorSlotCapacity":10,"costPerHour":20.0,"vehicleTypeAllowed":"{vehicleTypeId}"}'
+
+curl -X DELETE http://localhost:8080/parking_slots/{slotId}
+
+
+# ParkingTicket
+
+curl -X POST http://localhost:8080/parking_tickets/check-in \
+-H "Content-Type: application/json" \
+-d '{"vehicleId":"{vehicleId}","slotId":"{slotId}","allocationStrategy":"BEST_FIT"}'
+
+curl -X POST http://localhost:8080/parking_tickets/check-in \
+-H "Content-Type: application/json" \
+-d '{"vehicleId":"{vehicleId}"}'
+
+curl -X POST http://localhost:8080/parking_tickets/{ticketId}/check-out
+
+curl -X POST http://localhost:8080/parking_tickets/{ticketId}/pay \
+-H "Content-Type: application/json" \
+-d '{"amount":50.0}'
+
+curl -X POST http://localhost:8080/parking_tickets/batch-check-in \
+-H "Content-Type: application/json" \
+-d '{"vehicleIds":["{vehicleId1}","{vehicleId2}"],"slotId":"{slotId}"}'
+
+curl -X POST http://localhost:8080/parking_tickets/undo-last-checkin
+
+curl -X GET "http://localhost:8080/parking_tickets/{ticketId}"
+EOF
+echo done

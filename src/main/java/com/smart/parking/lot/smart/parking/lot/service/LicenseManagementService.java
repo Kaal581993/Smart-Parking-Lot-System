@@ -34,5 +34,9 @@ public class LicenseManagementService {
         licenseRepository.deleteById(licenseId);
     }
 
+    public LicenseNo updateLicense(LicenseNo license) {
+        return licenseRepository.save(license);
+    }
+
 }
 

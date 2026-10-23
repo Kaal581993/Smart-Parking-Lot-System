@@ -4,6 +4,7 @@ package com.smart.parking.lot.smart.parking.lot.controller;
 import com.smart.parking.lot.smart.parking.lot.entity.owner.LicenseNo;
 import com.smart.parking.lot.smart.parking.lot.service.LicenseManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -31,8 +32,14 @@ public class LicenseController {
         return new ResponseEntity<>(licenseManagementService.getLicenseList(), org.springframework.http.HttpStatus.OK);
     }
 
+    @PutMapping("/update_license")
+    public ResponseEntity<LicenseNo> updateLicense(@Valid @RequestBody LicenseNo license) {
+        return new ResponseEntity<>(licenseManagementService.updateLicense(license), org.springframework.http.HttpStatus.OK);
+    }
+
     @DeleteMapping("/delete_license/{licenseId}")
-    public void deleteLicense(@PathVariable String licenseId) {
+    public ResponseEntity<Void> deleteLicense(@PathVariable String licenseId) {
         licenseManagementService.deleteLicense(licenseId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

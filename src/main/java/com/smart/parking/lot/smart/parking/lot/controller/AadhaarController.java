@@ -38,6 +38,11 @@ public class AadhaarController {
         return new ResponseEntity<>(aadhaarManagementService.getOwnerAadhaarList(), org.springframework.http.HttpStatus.OK);
     }
 
+    @PutMapping("/update_aadhaar")
+    public ResponseEntity<OwnerAadhaar> updateAadhaar(@Valid @RequestBody OwnerAadhaar ownerAadhaar) {
+        return new ResponseEntity<>(aadhaarManagementService.updateOwnerAadhaar(ownerAadhaar), org.springframework.http.HttpStatus.OK);
+    }
+
     @DeleteMapping("/delete_aadhaar/{ownerAadhaarId}")
     public ResponseEntity<Void> deleteAadhaar(@PathVariable String ownerAadhaarId) {
         aadhaarManagementService.deleteOwnerAadhaar(ownerAadhaarId);

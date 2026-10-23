@@ -44,4 +44,8 @@ public class AadhaarManagementService {
 //        ownerAadhaarList.removeIf(ownerAadhaar -> ownerAadhaar.getAadharNo().equals(ownerAadhaarId));
         aadharRepository.deleteById(ownerAadhaarId);
     }
+
+    public OwnerAadhaar updateOwnerAadhaar(OwnerAadhaar ownerAadhaar) {
+        return aadharRepository.save(ownerAadhaar);
+    }
 }
