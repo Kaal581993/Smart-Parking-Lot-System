@@ -186,3 +186,35 @@ curl -X GET "http://localhost:8080/actuator/info"
 curl -X POST http://localhost:8080/vehicles/batch \
 -H "Content-Type: application/json" \
 -d '{"vehicles":[{"numberPlate":"MH04AB1234","vehicleType":"{vehicleTypeId}","vehicleBrand":"Honda","vehicleModel":"City","owner":"{owner}"}]}'
+
+
+# Authentication (RBAC)
+
+curl -X POST http://localhost:8080/auth/login \
+-H "Content-Type: application/json" \
+-d '{"username":"admin","password":"admin123"}'
+
+curl -X POST http://localhost:8080/auth/register-owner \
+-H "Content-Type: application/json" \
+-d '{"username":"owner1","password":"pass123","ownerId":"592470644664"}'
+
+curl -X POST http://localhost:8080/auth/logout \
+-H "Authorization: Bearer {token}"
+
+# Admin: create role
+curl -X POST http://localhost:8080/auth/admin/roles \
+-H "Content-Type: application/json" \
+-d '{"name":"OWNER"}'
+
+# Admin: create privilege
+curl -X POST http://localhost:8080/auth/admin/privileges \
+-H "Content-Type: application/json" \
+-d '{"name":"READ_VEHICLES"}'
+
+# Admin: assign privilege to role
+curl -X POST http://localhost:8080/auth/admin/roles/OWNER/privileges/READ_VEHICLES
+
+# Admin: create user
+curl -X POST http://localhost:8080/auth/admin/users \
+-H "Content-Type: application/json" \
+-d '{"username":"owner2","password":"pass","role":"OWNER","ownerId":"592470644664"}'
