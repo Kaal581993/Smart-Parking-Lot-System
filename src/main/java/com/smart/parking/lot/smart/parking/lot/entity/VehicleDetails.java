@@ -1,13 +1,16 @@
 package com.smart.parking.lot.smart.parking.lot.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.smart.parking.lot.smart.parking.lot.entity.util.IdGenerator;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jakarta.validation.constraints.NotNull;
+
+import java.util.Date;
 
 @Entity
 @Table(name = "vehicle_details")
@@ -38,6 +41,11 @@ public class VehicleDetails {
 
     private String vehicleBrand;
     private String vehicleModel;
+
+    private boolean isDeleted = false;
+
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private Date deletedAt;
 
     @PrePersist
     public void generateVehicleId() {

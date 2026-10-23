@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/vehicle_owners")
@@ -33,6 +35,7 @@ public class VehicleOwnerController {
 
     @GetMapping
     public ResponseEntity<?> getVehicleOwners(
+            Pageable pageable,
             @RequestParam(required = false) String aadhaarNumber,
             @RequestParam(required = false) String licenseNumber) {
         if (aadhaarNumber != null) {
@@ -41,7 +44,7 @@ public class VehicleOwnerController {
         if (licenseNumber != null) {
             return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerByLicenseNumber(licenseNumber), HttpStatus.OK);
         }
-        return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerList(), HttpStatus.OK);
+        return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerList(pageable), HttpStatus.OK);
     }
 
     @GetMapping("/{aadhaarNumber}")

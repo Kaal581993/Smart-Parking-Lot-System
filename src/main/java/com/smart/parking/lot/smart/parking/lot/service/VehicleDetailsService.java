@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class VehicleDetailsService {
@@ -29,7 +31,8 @@ public class VehicleDetailsService {
     }
 
     public VehicleDetails getVehicleDetailsById(String vehicleDetailsId) {
-        return vehicleDetailsRepository.findById(vehicleDetailsId).orElse(null);
+        return vehicleDetailsRepository.findById(vehicleDetailsId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("VehicleDetails not found: " + vehicleDetailsId));
     }
 
     public List<VehicleDetails> getVehiclesByOwnerAadhaar(String aadhaarNumber) {
@@ -40,8 +43,8 @@ public class VehicleDetailsService {
         return ticketService.getActiveTicketByVehicle(vehicleId);
     }
 
-    public List<VehicleDetails> getVehicleDetailsList() {
-        return vehicleDetailsRepository.findAll();
+    public org.springframework.data.domain.Page<VehicleDetails> getVehicleDetailsList(org.springframework.data.domain.Pageable pageable) {
+        return vehicleDetailsRepository.findAll(pageable);
     }
 
     public void deleteVehicleDetails(String vehicleDetailsId) {

@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class VehicleOwnerService {
@@ -25,11 +27,15 @@ public class VehicleOwnerService {
     }
 
     public VehicleOwner getVehicleOwnerById(String vehicleOwner) {
-        return null;
+        VehicleOwner owner = vehicleOwnerRepository.findByAadhaarNumber(vehicleOwner);
+        if (owner == null) {
+            throw new jakarta.persistence.EntityNotFoundException("VehicleOwner not found: " + vehicleOwner);
+        }
+        return owner;
     }
 
-    public List<VehicleOwner> getVehicleOwnerList() {
-        return vehicleOwnerRepository.findAll();
+    public org.springframework.data.domain.Page<VehicleOwner> getVehicleOwnerList(org.springframework.data.domain.Pageable pageable) {
+        return vehicleOwnerRepository.findAll(pageable);
     }
 
     public void deleteVehicleOwner(String vehicleOwner) {

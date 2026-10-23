@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/vehicles")
@@ -24,11 +26,11 @@ public class VehicleDetailsController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getVehicleDetails(@RequestParam(required = false) String vehicleDetailsId) {
+    public ResponseEntity<?> getVehicleDetails(Pageable pageable, @RequestParam(required = false) String vehicleDetailsId) {
         if (vehicleDetailsId != null) {
             return new ResponseEntity<>(vehicleDetailsService.getVehicleDetailsById(vehicleDetailsId), HttpStatus.OK);
         }
-        return new ResponseEntity<>(vehicleDetailsService.getVehicleDetailsList(), HttpStatus.OK);
+        return new ResponseEntity<>(vehicleDetailsService.getVehicleDetailsList(pageable), HttpStatus.OK);
     }
 
     @GetMapping("/{vehicleId}")

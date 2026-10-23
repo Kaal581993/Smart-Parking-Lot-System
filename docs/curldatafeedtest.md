@@ -162,3 +162,20 @@ curl -X POST http://localhost:8080/parking_tickets/undo-last-checkin
 curl -X GET "http://localhost:8080/parking_tickets/{ticketId}"
 EOF
 echo done
+
+# Pagination & Sorting Examples
+
+curl -X GET "http://localhost:8080/vehicle_owners?page=0&size=10&sort=vehicleOwnerName,asc"
+
+curl -X GET "http://localhost:8080/vehicles?page=0&size=5&sort=numberPlate,desc"
+
+curl -X GET "http://localhost:8080/parking_slots?page=0&size=20&sort=floorNo,asc&available=true"
+
+
+# Actuator
+
+curl -X GET "http://localhost:8080/actuator/health"
+
+curl -X GET "http://localhost:8080/actuator/metrics"
+
+curl -X GET "http://localhost:8080/actuator/info"

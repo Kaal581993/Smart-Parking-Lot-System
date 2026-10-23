@@ -56,6 +56,10 @@ public class ParkingSlot {
 
      private boolean isAvailable = true;
      private boolean isActive = true;
+     private boolean isDeleted = false;
+
+     @JsonFormat(pattern = "dd/MM/yyyy")
+     private Date deletedAt;
 
      @OneToMany(mappedBy = "parkingSlot", cascade = CascadeType.ALL, orphanRemoval = false)
      private List<ParkingTicket> tickets;

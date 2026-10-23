@@ -66,6 +66,10 @@ public class ParkingTicket {
     private boolean isDeleted;
     private Date deletedAt;
 
+    private String createdBy;
+    private Date createdAt;
+    private Date updatedAt;
+
     @PrePersist
     public void onCreate() {
         if (ticketId == null) {
@@ -75,6 +79,8 @@ public class ParkingTicket {
             status = CurrentTicketState.ACTIVE;
         }
         isDeleted = false;
+        createdAt = new Date();
+        updatedAt = createdAt;
     }
 
     @PreUpdate
@@ -88,5 +94,6 @@ public class ParkingTicket {
         if (isDeleted && deletedAt == null) {
             deletedAt = new Date();
         }
+        updatedAt = new Date();
     }
 }

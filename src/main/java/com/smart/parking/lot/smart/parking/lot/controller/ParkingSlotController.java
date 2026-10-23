@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/parking_slots")
@@ -27,11 +29,12 @@ public class ParkingSlotController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ParkingSlot>> getParkingSlots(
+    public ResponseEntity<Page<ParkingSlot>> getParkingSlots(
+            Pageable pageable,
             @RequestParam(required = false) Integer floorNo,
             @RequestParam(required = false) Boolean available,
             @RequestParam(required = false) String vehicleType) {
-        return new ResponseEntity<>(parkingSlotService.getSlots(
+        return new ResponseEntity<>(parkingSlotService.getSlots(pageable,
                 floorNo == null ? null : String.valueOf(floorNo), available, vehicleType), HttpStatus.OK);
     }
 
