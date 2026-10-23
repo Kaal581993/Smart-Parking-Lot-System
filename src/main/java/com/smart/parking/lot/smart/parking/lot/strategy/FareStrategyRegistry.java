@@ -6,6 +6,9 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class FareStrategyRegistry {
     private final Map<String, FareStrategy> strategies = new ConcurrentHashMap<>();
 

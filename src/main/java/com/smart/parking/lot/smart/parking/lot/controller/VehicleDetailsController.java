@@ -1,8 +1,10 @@
 package com.smart.parking.lot.smart.parking.lot.controller;
 
+import com.smart.parking.lot.smart.parking.lot.entity.ParkingTicket;
 import com.smart.parking.lot.smart.parking.lot.entity.VehicleDetails;
 import com.smart.parking.lot.smart.parking.lot.service.VehicleDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -10,37 +12,47 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/vehicle_details")
-
+@RequestMapping("/vehicles")
 public class VehicleDetailsController {
 
     @Autowired
     private VehicleDetailsService vehicleDetailsService;
 
-
-    @PostMapping("/add_vehicle_details")
+    @PostMapping
     public ResponseEntity<VehicleDetails> addVehicleDetails(@Valid @RequestBody VehicleDetails vehicleDetails) {
-        return new ResponseEntity<>(
-                vehicleDetailsService.createVehicleDetails(vehicleDetails),
-                org.springframework.http.HttpStatus.CREATED);
+        return new ResponseEntity<>(vehicleDetailsService.createVehicleDetails(vehicleDetails), HttpStatus.CREATED);
     }
 
-    @GetMapping("/get_vehicle_details")
+    @GetMapping
     public ResponseEntity<?> getVehicleDetails(@RequestParam(required = false) String vehicleDetailsId) {
         if (vehicleDetailsId != null) {
-            return new ResponseEntity<>(vehicleDetailsService.getVehicleDetailsById(vehicleDetailsId), org.springframework.http.HttpStatus.OK);
+            return new ResponseEntity<>(vehicleDetailsService.getVehicleDetailsById(vehicleDetailsId), HttpStatus.OK);
         }
-        return new ResponseEntity<>(vehicleDetailsService.getVehicleDetailsList(), org.springframework.http.HttpStatus.OK);
+        return new ResponseEntity<>(vehicleDetailsService.getVehicleDetailsList(), HttpStatus.OK);
     }
 
-    @PutMapping("/update_vehicle_details/{vehicleDetailsId}")
-    public ResponseEntity<VehicleDetails> updateVehicleDetails(@PathVariable String vehicleDetailsId, @Valid @RequestBody VehicleDetails vehicleDetails) {
-        return new ResponseEntity<>(vehicleDetailsService.updateVehicleDetails(vehicleDetails), org.springframework.http.HttpStatus.OK);
+    @GetMapping("/{vehicleId}")
+    public ResponseEntity<VehicleDetails> getVehicleById(@PathVariable String vehicleId) {
+        return new ResponseEntity<>(vehicleDetailsService.getVehicleDetailsById(vehicleId), HttpStatus.OK);
     }
 
-    @DeleteMapping("/delete_vehicle_details/{vehicleDetailsId}")
-    public ResponseEntity<Void> deleteVehicleDetails(@PathVariable String vehicleDetailsId) {
-        vehicleDetailsService.deleteVehicleDetails(vehicleDetailsId);
-        return new ResponseEntity<>(org.springframework.http.HttpStatus.NO_CONTENT);
+    @GetMapping("/{vehicleId}/active-ticket")
+    public ResponseEntity<ParkingTicket> getActiveTicket(@PathVariable String vehicleId) {
+        ParkingTicket ticket = vehicleDetailsService.getActiveTicketByVehicle(vehicleId);
+        if (ticket == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(ticket, HttpStatus.OK);
+    }
+
+    @PutMapping("/{vehicleId}")
+    public ResponseEntity<VehicleDetails> updateVehicleDetails(@PathVariable String vehicleId, @Valid @RequestBody VehicleDetails vehicleDetails) {
+        return new ResponseEntity<>(vehicleDetailsService.updateVehicleDetails(vehicleDetails), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{vehicleId}")
+    public ResponseEntity<Void> deleteVehicleDetails(@PathVariable String vehicleId) {
+        vehicleDetailsService.deleteVehicleDetails(vehicleId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

@@ -29,8 +29,12 @@ public class ParkingSlotService {
         return slotService.createSlot(parkingSlot);
     }
 
-    public List<ParkingSlot> getAllParkingSlots() {
-        return parkingSlotRepository.findAll();
+    public List<ParkingSlot> getSlots(String floorNo, Boolean available, String vehicleType) {
+        return parkingSlotRepository.findAll().stream()
+                .filter(s -> floorNo == null || String.valueOf(s.getFloorNo()).equals(floorNo))
+                .filter(s -> available == null || s.isAvailable() == available)
+                .filter(s -> vehicleType == null || (s.getVehicleTypeAllowed() != null && s.getVehicleTypeAllowed().getTypeName().equalsIgnoreCase(vehicleType)))
+                .toList();
     }
 
     public ParkingSlot getParkingSlotById(String parkingSlotId) {

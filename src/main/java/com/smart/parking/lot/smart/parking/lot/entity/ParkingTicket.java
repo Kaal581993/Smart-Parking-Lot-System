@@ -35,7 +35,10 @@ public class ParkingTicket {
 
     @ManyToOne
     @NotNull
-    @JoinColumn(name = "vehicle_owner_id")
+    @JoinColumns({
+            @JoinColumn(name = "aadharNo"),
+            @JoinColumn(name = "licenseNo")
+    })
     private VehicleOwner vehicleOwner;
 
     @ManyToOne

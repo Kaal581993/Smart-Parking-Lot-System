@@ -52,14 +52,19 @@ public class TicketService {
     }
 
     public boolean isSlotOccupied(String slotId) {
-        return parkingTicketRepository.existsByParkingSlotIdAndStatus(slotId, CurrentTicketState.ACTIVE);
+        return parkingTicketRepository.existsByParkingSlot_SlotIdAndStatus(slotId, CurrentTicketState.ACTIVE);
     }
 
     public boolean isVehicleAlreadyParked(String vehicleId) {
-        return parkingTicketRepository.existsByVehicleDetailsIdAndStatus(vehicleId, CurrentTicketState.ACTIVE);
+        return parkingTicketRepository.existsByVehicleDetails_VehicleIdAndStatus(vehicleId, CurrentTicketState.ACTIVE);
     }
 
-    public List<ParkingTicket> getActiveTickets() {
-        return parkingTicketRepository.findByParkingSlotIdAndStatus(null, CurrentTicketState.ACTIVE);
+    public ParkingTicket getActiveTicketByVehicle(String vehicleId) {
+        List<ParkingTicket> active = parkingTicketRepository.findByVehicleDetails_VehicleIdAndStatus(vehicleId, CurrentTicketState.ACTIVE);
+        return active.isEmpty() ? null : active.get(0);
+    }
+
+    public List<ParkingTicket> getTicketsBySlot(String slotId) {
+        return parkingTicketRepository.findByParkingSlot_SlotId(slotId);
     }
 }

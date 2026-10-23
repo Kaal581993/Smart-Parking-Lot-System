@@ -1,13 +1,11 @@
 package com.smart.parking.lot.smart.parking.lot.controller;
 
-
-import com.smart.parking.lot.smart.parking.lot.dto.CheckInRequest;
-import com.smart.parking.lot.smart.parking.lot.dto.CheckOutRequest;
 import com.smart.parking.lot.smart.parking.lot.entity.ParkingSlot;
 import com.smart.parking.lot.smart.parking.lot.entity.ParkingTicket;
-import com.smart.parking.lot.smart.parking.lot.facade.ParkingFacade;
 import com.smart.parking.lot.smart.parking.lot.service.ParkingSlotService;
+import com.smart.parking.lot.smart.parking.lot.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -15,44 +13,42 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/parking_lot")
+@RequestMapping("/parking_slots")
 public class ParkingSlotController {
 
     @Autowired
     private ParkingSlotService parkingSlotService;
 
     @Autowired
-    private ParkingFacade parkingFacade;
+    private TicketService ticketService;
 
-    @RequestMapping("/add_parking_slot_details")
+    @PostMapping
     public ResponseEntity<ParkingSlot> addParkingSlot(@Valid @RequestBody ParkingSlot parkingSlot) {
-        return new ResponseEntity<>(parkingSlotService.createParkingSlot(parkingSlot), org.springframework.http.HttpStatus.CREATED);
+        return new ResponseEntity<>(parkingSlotService.createParkingSlot(parkingSlot), HttpStatus.CREATED);
     }
 
-    @PostMapping("/check_in")
-    public ResponseEntity<ParkingTicket> checkIn(@Valid @RequestBody CheckInRequest request) {
-        ParkingTicket ticket = parkingFacade.checkIn(request);
-        return new ResponseEntity<>(ticket, org.springframework.http.HttpStatus.CREATED);
+    @GetMapping
+    public ResponseEntity<List<ParkingSlot>> getParkingSlots(
+            @RequestParam(required = false) Integer floorNo,
+            @RequestParam(required = false) Boolean available,
+            @RequestParam(required = false) String vehicleType) {
+        return new ResponseEntity<>(parkingSlotService.getSlots(
+                floorNo == null ? null : String.valueOf(floorNo), available, vehicleType), HttpStatus.OK);
     }
 
-    @PostMapping("/check_out")
-    public ResponseEntity<ParkingTicket> checkOut(@Valid @RequestBody CheckOutRequest request) {
-        ParkingTicket ticket = parkingFacade.checkOut(request);
-        return new ResponseEntity<>(ticket, org.springframework.http.HttpStatus.OK);
+    @GetMapping("/{slotId}")
+    public ResponseEntity<ParkingSlot> getParkingSlotById(@PathVariable String slotId) {
+        return new ResponseEntity<>(parkingSlotService.getParkingSlotById(slotId), HttpStatus.OK);
     }
 
-    @GetMapping("/get_parking_slot")
-    public ResponseEntity<?> getParkingSlots(@RequestParam(required = false) String parkingSlotId) {
-        if (parkingSlotId != null) {
-            return new ResponseEntity<>(parkingSlotService.getParkingSlotById(parkingSlotId), org.springframework.http.HttpStatus.OK);
-        }
-        return new ResponseEntity<>(parkingSlotService.getAllParkingSlots(), org.springframework.http.HttpStatus.OK);
+    @GetMapping("/{slotId}/tickets")
+    public ResponseEntity<List<ParkingTicket>> getSlotTickets(@PathVariable String slotId) {
+        return new ResponseEntity<>(ticketService.getTicketsBySlot(slotId), HttpStatus.OK);
     }
 
-    @DeleteMapping("/delete_parking_slot/{parkingSlotId}")
-    public ResponseEntity<Void> deleteParkingSlot(@PathVariable String parkingSlotId) {
-        parkingSlotService.deleteParkingSlot(parkingSlotId);
-        return new ResponseEntity<>(org.springframework.http.HttpStatus.NO_CONTENT);
+    @DeleteMapping("/{slotId}")
+    public ResponseEntity<Void> deleteParkingSlot(@PathVariable String slotId) {
+        parkingSlotService.deleteParkingSlot(slotId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
 }

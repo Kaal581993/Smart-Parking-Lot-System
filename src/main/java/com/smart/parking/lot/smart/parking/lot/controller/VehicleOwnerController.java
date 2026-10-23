@@ -1,7 +1,12 @@
 package com.smart.parking.lot.smart.parking.lot.controller;
 
 
+import com.smart.parking.lot.smart.parking.lot.dto.CheckInRequest;
+import com.smart.parking.lot.smart.parking.lot.dto.CheckOutRequest;
+import com.smart.parking.lot.smart.parking.lot.entity.ParkingTicket;
+import com.smart.parking.lot.smart.parking.lot.entity.VehicleDetails;
 import com.smart.parking.lot.smart.parking.lot.entity.VehicleOwner;
+import com.smart.parking.lot.smart.parking.lot.service.VehicleDetailsService;
 import com.smart.parking.lot.smart.parking.lot.service.VehicleOwnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,62 +17,55 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/vehicle_owner")
+@RequestMapping("/vehicle_owners")
 public class VehicleOwnerController {
 
     @Autowired
     private VehicleOwnerService vehicleOwnerService;
 
+    @Autowired
+    private VehicleDetailsService vehicleDetailsService;
 
-    @PostMapping("/add_vehicle_owner")
-    public ResponseEntity<VehicleOwner> addVehicleOwner(@Valid @RequestBody VehicleOwner vehicleOwner) {
-        return new ResponseEntity<>(
-                vehicleOwnerService.createVehicleOwner(vehicleOwner),
-                org.springframework.http.HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<VehicleOwner> createVehicleOwner(@Valid @RequestBody VehicleOwner vehicleOwner) {
+        return new ResponseEntity<>(vehicleOwnerService.createVehicleOwner(vehicleOwner), HttpStatus.CREATED);
     }
 
-
-    @GetMapping("/get_vehicle_owner")
+    @GetMapping
     public ResponseEntity<?> getVehicleOwners(
-            @RequestParam(required = false) String vehicleOwnerId,
             @RequestParam(required = false) String aadhaarNumber,
             @RequestParam(required = false) String licenseNumber) {
-        if (vehicleOwnerId != null) {
-            return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerById(vehicleOwnerId), org.springframework.http.HttpStatus.OK);
-        }
         if (aadhaarNumber != null) {
-            return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerByAadhaarNumber(aadhaarNumber), org.springframework.http.HttpStatus.OK);
+            return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerByAadhaarNumber(aadhaarNumber), HttpStatus.OK);
         }
         if (licenseNumber != null) {
-            return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerByLicenseNumber(licenseNumber), org.springframework.http.HttpStatus.OK);
+            return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerByLicenseNumber(licenseNumber), HttpStatus.OK);
         }
-        return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerList(), org.springframework.http.HttpStatus.OK);
+        return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerList(), HttpStatus.OK);
     }
 
-    @DeleteMapping("/delete_vehicle_owner/{vehicleOwnerId}")
-    public ResponseEntity<Void> deleteVehicleOwner(@PathVariable String vehicleOwnerId) {
-        vehicleOwnerService.deleteVehicleOwner(vehicleOwnerId);
-        return new ResponseEntity<>(org.springframework.http.HttpStatus.NO_CONTENT);
+    @GetMapping("/{aadhaarNumber}")
+    public ResponseEntity<VehicleOwner> getVehicleOwnerByAadhaar(@PathVariable String aadhaarNumber) {
+        return new ResponseEntity<>(vehicleOwnerService.getVehicleOwnerByAadhaarNumber(aadhaarNumber), HttpStatus.OK);
     }
 
-    @PutMapping("/update_vehicle_owner")
-    public ResponseEntity<VehicleOwner> updateVehicleOwner(@PathVariable VehicleOwner vehicleOwner){
-        return new ResponseEntity<>(
-                vehicleOwnerService.updateVehicleOwner(vehicleOwner), HttpStatus.OK
-        );
+    @GetMapping("/{aadhaarNumber}/vehicles")
+    public ResponseEntity<List<VehicleDetails>> getOwnerVehicles(@PathVariable String aadhaarNumber) {
+        return new ResponseEntity<>(vehicleDetailsService.getVehiclesByOwnerAadhaar(aadhaarNumber), HttpStatus.OK);
     }
 
-    @PutMapping("/update_vehicle_owner_by_aadhaar_number/{aadhaarNumber}")
-    public ResponseEntity<VehicleOwner> updateVehicleOwnerByAadhaarNumber(@PathVariable String aadhaarNumber, @Valid @RequestBody VehicleOwner vehicleOwner) {
-        return new ResponseEntity<>(
-                vehicleOwnerService.updateVehicleOwnerByAadhaarNumber(aadhaarNumber, vehicleOwner), HttpStatus.OK
-        );
+    @PostMapping("/{aadhaarNumber}/vehicles")
+    public ResponseEntity<VehicleDetails> createOwnerVehicle(@PathVariable String aadhaarNumber,
+                                                              @Valid @RequestBody VehicleDetails vehicleDetails) {
+        VehicleOwner owner = vehicleOwnerService.getVehicleOwnerByAadhaarNumber(aadhaarNumber);
+        vehicleDetails.setOwner(owner);
+        return new ResponseEntity<>(vehicleDetailsService.createVehicleDetails(vehicleDetails), HttpStatus.CREATED);
     }
 
-    @PutMapping("/update_vehicle_owner_by_drv_licence_number/{licenseNumber}")
-    public ResponseEntity<VehicleOwner> updateVehicleOwnerByDrvLicenseNo(@PathVariable String licenseNo, @Valid @RequestBody VehicleOwner vehicleOwner){
-        return new ResponseEntity<>(
-                vehicleOwnerService.updateVehicleOwnerByDrvLicenseNo(licenseNo, vehicleOwner), HttpStatus.OK
-        );
+    @DeleteMapping("/{aadhaarNumber}")
+    public ResponseEntity<Void> deleteVehicleOwner(@PathVariable String aadhaarNumber) {
+        VehicleOwner owner = vehicleOwnerService.getVehicleOwnerByAadhaarNumber(aadhaarNumber);
+        vehicleOwnerService.deleteVehicleOwner(owner != null ? owner.getAadhaar().getAadhaarNo() : aadhaarNumber);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

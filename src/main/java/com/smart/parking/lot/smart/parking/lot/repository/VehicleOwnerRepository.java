@@ -10,9 +10,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VehicleOwnerRepository extends JpaRepository<VehicleOwner, OwnerIdentityId> {
-    VehicleOwner findByAadhaarNumber(String aadhaarNumber);
+    @Query("SELECT v FROM VehicleOwner v WHERE v.aadhaar.aadhaarNo = :aadhaarNumber")
+    VehicleOwner findByAadhaarNumber(@Param("aadhaarNumber") String aadhaarNumber);
 
-    VehicleOwner findByLicenseNumber(String licenseNumber);
+    @Query("SELECT v FROM VehicleOwner v WHERE v.licenseNo.licenseId = :licenseNumber")
+    VehicleOwner findByLicenseNumber(@Param("licenseNumber") String licenseNumber);
 
     @Query("SELECT CASE WHEN COUNT(v) > 0 THEN true ELSE false END FROM VehicleOwner v WHERE v.aadhaar.aadhaarNo = :aadhaarNumber")
     boolean existsByAadhaarNumber(@Param("aadhaarNumber") String aadhaarNumber);

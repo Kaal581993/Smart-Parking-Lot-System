@@ -11,6 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface VehicleDetailsRepository extends JpaRepository<VehicleDetails, String> {
     boolean existsByNumberPlate(String numberPlate);
 
-    @Query("SELECT CASE WHEN COUNT(v) > 0 THEN true ELSE false END FROM VehicleDetails v WHERE v.numberPlate = :numberPlate AND v.owner.ownerIdentityId <> :ownerId")
-    boolean existsByNumberPlateAndOwnerNot(@Param("numberPlate") String numberPlate, @Param("ownerId") String ownerId);
+    @Query("SELECT v FROM VehicleDetails v WHERE v.owner.aadhaar.aadhaarNo = :aadhaarNumber")
+    java.util.List<VehicleDetails> findByOwnerAadhaarNumber(@Param("aadhaarNumber") String aadhaarNumber);
 }

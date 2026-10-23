@@ -10,11 +10,13 @@ import java.util.List;
 @Repository
 public interface ParkingTicketRepository extends JpaRepository<ParkingTicket, String> {
 
-    List<ParkingTicket> findByParkingSlotIdAndStatus(String slotId, CurrentTicketState status);
+    List<ParkingTicket> findByParkingSlot_SlotIdAndStatus(String slotId, CurrentTicketState status);
 
-    List<ParkingTicket> findByVehicleDetailsIdAndStatus(String vehicleId, CurrentTicketState status);
+    List<ParkingTicket> findByParkingSlot_SlotId(String slotId);
 
-    boolean existsByParkingSlotIdAndStatus(String slotId, CurrentTicketState status);
+    List<ParkingTicket> findByVehicleDetails_VehicleIdAndStatus(String vehicleId, CurrentTicketState status);
 
-    boolean existsByVehicleDetailsIdAndStatus(String vehicleId, CurrentTicketState status);
+    boolean existsByParkingSlot_SlotIdAndStatus(String slotId, CurrentTicketState status);
+
+    boolean existsByVehicleDetails_VehicleIdAndStatus(String vehicleId, CurrentTicketState status);
 }

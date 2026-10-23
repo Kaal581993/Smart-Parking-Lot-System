@@ -29,7 +29,10 @@ public class VehicleDetails {
     private VehicleType vehicleType;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @JoinColumns({
+            @JoinColumn(name = "aadharNo"),
+            @JoinColumn(name = "licenseNo")
+    })
     private VehicleOwner owner;
 
 
