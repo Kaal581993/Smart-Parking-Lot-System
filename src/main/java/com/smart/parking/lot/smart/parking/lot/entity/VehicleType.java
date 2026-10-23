@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotNull;
+
 
 @Entity
 @Table(name = "vehicle_type")
@@ -18,9 +20,16 @@ public class VehicleType {
 
     @Id
 //    @GeneratedValue(strategy = GenerationType.AUTO)
+    @NotNull
     private String typeId;
+    
+    @NotNull
     private String typeName;
+
+    @NotNull
     private double hourlyRate;
+
+    @NotNull
     private double dailyRate;
 
     @PrePersist

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class AddressController {
     private AddressManagementService addressManagementService;
 
     @PostMapping("/add_address")
-    public ResponseEntity<Address> createAddress(@RequestBody Address address) {
+    public ResponseEntity<Address> createAddress(@Valid @RequestBody Address address) {
         addressManagementService.createAddress(address);
         return new ResponseEntity<>(address, HttpStatus.CREATED);
     }

@@ -6,6 +6,7 @@ import com.smart.parking.lot.smart.parking.lot.service.LicenseManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class LicenseController {
     LicenseManagementService licenseManagementService;
 
     @PostMapping("/add_license")
-    public ResponseEntity<LicenseNo> addLicense(@RequestBody LicenseNo license) {
+    public ResponseEntity<LicenseNo> addLicense(@Valid @RequestBody LicenseNo license) {
         return new ResponseEntity<>(
                 licenseManagementService.createLicense(license),
                 org.springframework.http.HttpStatus.CREATED);

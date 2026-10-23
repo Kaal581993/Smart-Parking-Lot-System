@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "vehicle_details")
@@ -18,11 +18,18 @@ import lombok.NoArgsConstructor;
 public class VehicleDetails {
 
     @Id
+    @NotNull
     private String vehicleId;
+
+    @Column(unique = true)
     private String numberPlate;
 
     @ManyToOne
     private VehicleType vehicleType;
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private VehicleOwner owner;
 
     private String vehicleBrand;
     private String vehicleModel;

@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import jakarta.validation.constraints.NotNull;
 import java.util.Date;
 
 @Data
@@ -19,16 +19,27 @@ import java.util.Date;
 public class OwnerAadhaar {
     @Id
     @JsonProperty("aadhaarNo")
+    @NotNull
     private String aadhaarNo;
+
+    @NotNull
     private String firstName;
+
+    @NotNull
     private String lastName;
+
+    @NotNull
     private String middleName;
+
+    @NotNull
     private Gender gender;
 
     @JsonFormat(pattern = "dd/MM/yyyy")
+    @NotNull
     private Date dateOfBirth;
 
     @Column(unique = true)
+    @NotNull
     private String email;
 
     @Column(unique = true)
@@ -36,11 +47,15 @@ public class OwnerAadhaar {
 
     @Transient
     @JsonProperty("addressId")
+    @NotNull
     private String addressId;
 
     @JsonProperty("Address")
     @ManyToOne
     @JoinColumn(name = "addressId")
+    @NotNull
     private Address address;
+
+    @NotNull
     private String panNo;
 }

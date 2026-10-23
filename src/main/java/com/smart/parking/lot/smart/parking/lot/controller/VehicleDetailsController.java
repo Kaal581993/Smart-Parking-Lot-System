@@ -5,6 +5,7 @@ import com.smart.parking.lot.smart.parking.lot.service.VehicleDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class VehicleDetailsController {
 
 
     @PostMapping("/add_vehicle_details")
-    public ResponseEntity<VehicleDetails> addVehicleDetails(@RequestBody VehicleDetails vehicleDetails) {
+    public ResponseEntity<VehicleDetails> addVehicleDetails(@Valid @RequestBody VehicleDetails vehicleDetails) {
         return new ResponseEntity<>(
                 vehicleDetailsService.createVehicleDetails(vehicleDetails),
                 org.springframework.http.HttpStatus.CREATED);

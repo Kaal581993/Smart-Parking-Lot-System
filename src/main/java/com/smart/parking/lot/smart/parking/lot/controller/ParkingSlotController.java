@@ -1,13 +1,16 @@
 package com.smart.parking.lot.smart.parking.lot.controller;
 
 
+import com.smart.parking.lot.smart.parking.lot.dto.CheckInRequest;
+import com.smart.parking.lot.smart.parking.lot.dto.CheckOutRequest;
 import com.smart.parking.lot.smart.parking.lot.entity.ParkingSlot;
-import com.smart.parking.lot.smart.parking.lot.entity.owner.LicenseNo;
-import com.smart.parking.lot.smart.parking.lot.service.LicenseManagementService;
+import com.smart.parking.lot.smart.parking.lot.entity.ParkingTicket;
+import com.smart.parking.lot.smart.parking.lot.facade.ParkingFacade;
 import com.smart.parking.lot.smart.parking.lot.service.ParkingSlotService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -18,11 +21,24 @@ public class ParkingSlotController {
     @Autowired
     private ParkingSlotService parkingSlotService;
 
-    @RequestMapping("/add_parking_slot_details")
-    public ResponseEntity<ParkingSlot> addParkingSlot(@RequestBody ParkingSlot parkingSlot) {
-        return new ResponseEntity<>(parkingSlotService.createParkingSlot(parkingSlot), org.springframework.http.HttpStatus.CREATED);
+    @Autowired
+    private ParkingFacade parkingFacade;
 
-        //parkingSlotService.createParkingSlot(parkingSlot);
+    @RequestMapping("/add_parking_slot_details")
+    public ResponseEntity<ParkingSlot> addParkingSlot(@Valid @RequestBody ParkingSlot parkingSlot) {
+        return new ResponseEntity<>(parkingSlotService.createParkingSlot(parkingSlot), org.springframework.http.HttpStatus.CREATED);
+    }
+
+    @PostMapping("/check_in")
+    public ResponseEntity<ParkingTicket> checkIn(@Valid @RequestBody CheckInRequest request) {
+        ParkingTicket ticket = parkingFacade.checkIn(request);
+        return new ResponseEntity<>(ticket, org.springframework.http.HttpStatus.CREATED);
+    }
+
+    @PostMapping("/check_out")
+    public ResponseEntity<ParkingTicket> checkOut(@Valid @RequestBody CheckOutRequest request) {
+        ParkingTicket ticket = parkingFacade.checkOut(request);
+        return new ResponseEntity<>(ticket, org.springframework.http.HttpStatus.OK);
     }
 
     @GetMapping("/get_parking_slot")

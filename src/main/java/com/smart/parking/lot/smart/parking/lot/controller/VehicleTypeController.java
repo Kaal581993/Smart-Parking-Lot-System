@@ -6,6 +6,7 @@ import com.smart.parking.lot.smart.parking.lot.service.VehicleTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/vehicle_type")
@@ -15,7 +16,7 @@ public class VehicleTypeController {
     private VehicleTypeService vehicleTypeService;
 
     @PostMapping("/add_vehicle_type")
-    public ResponseEntity<VehicleType> addVehicleType(@RequestBody VehicleType vehicleType) {
+    public ResponseEntity<VehicleType> addVehicleType(@Valid @RequestBody VehicleType vehicleType) {
         return new ResponseEntity<>(
                 vehicleTypeService.createVehicleType(vehicleType),
                 org.springframework.http.HttpStatus.CREATED);
@@ -23,7 +24,7 @@ public class VehicleTypeController {
 
 
     @PutMapping("/update_vehicle_type/{vehicleTypeId}")
-    public ResponseEntity<VehicleType> updateVehicleType(@PathVariable String vehicleTypeId, @RequestBody VehicleType vehicleType) {
+    public ResponseEntity<VehicleType> updateVehicleType(@PathVariable String vehicleTypeId, @Valid @RequestBody VehicleType vehicleType) {
         return new ResponseEntity<>(
                 vehicleTypeService.updateVehicleTypeById(vehicleTypeId, vehicleType),
                 org.springframework.http.HttpStatus.OK);

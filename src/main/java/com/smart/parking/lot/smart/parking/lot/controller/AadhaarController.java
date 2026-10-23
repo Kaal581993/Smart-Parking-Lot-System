@@ -6,6 +6,7 @@ import com.smart.parking.lot.smart.parking.lot.service.AadhaarManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class AadhaarController {
 //    }
 
     @PostMapping("/add_aadhaar")
-    public ResponseEntity<OwnerAadhaar> addAadhaar(@RequestBody OwnerAadhaar ownerAadhaar){
+    public ResponseEntity<OwnerAadhaar> addAadhaar(@Valid @RequestBody OwnerAadhaar ownerAadhaar){
         return new ResponseEntity<>(
                 aadhaarManagementService.createOwnerAadhaar(ownerAadhaar),
                 org.springframework.http.HttpStatus.CREATED);

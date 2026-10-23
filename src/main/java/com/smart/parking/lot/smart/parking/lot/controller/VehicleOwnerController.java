@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class VehicleOwnerController {
 
 
     @PostMapping("/add_vehicle_owner")
-    public ResponseEntity<VehicleOwner> addVehicleOwner(@RequestBody VehicleOwner vehicleOwner) {
+    public ResponseEntity<VehicleOwner> addVehicleOwner(@Valid @RequestBody VehicleOwner vehicleOwner) {
         return new ResponseEntity<>(
                 vehicleOwnerService.createVehicleOwner(vehicleOwner),
                 org.springframework.http.HttpStatus.CREATED);
@@ -57,14 +58,14 @@ public class VehicleOwnerController {
     }
 
     @PutMapping("/update_vehicle_owner_by_aadhaar_number/{aadhaarNumber}")
-    public ResponseEntity<VehicleOwner> updateVehicleOwnerByAadhaarNumber(@PathVariable String aadhaarNumber, @RequestBody VehicleOwner vehicleOwner) {
+    public ResponseEntity<VehicleOwner> updateVehicleOwnerByAadhaarNumber(@PathVariable String aadhaarNumber, @Valid @RequestBody VehicleOwner vehicleOwner) {
         return new ResponseEntity<>(
                 vehicleOwnerService.updateVehicleOwnerByAadhaarNumber(aadhaarNumber, vehicleOwner), HttpStatus.OK
         );
     }
 
     @PutMapping("/update_vehicle_owner_by_drv_licence_number/{licenseNumber}")
-    public ResponseEntity<VehicleOwner> updateVehicleOwnerByDrvLicenseNo(@PathVariable String licenseNo, @RequestBody VehicleOwner vehicleOwner){
+    public ResponseEntity<VehicleOwner> updateVehicleOwnerByDrvLicenseNo(@PathVariable String licenseNo, @Valid @RequestBody VehicleOwner vehicleOwner){
         return new ResponseEntity<>(
                 vehicleOwnerService.updateVehicleOwnerByDrvLicenseNo(licenseNo, vehicleOwner), HttpStatus.OK
         );
