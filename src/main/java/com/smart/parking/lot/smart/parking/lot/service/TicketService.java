@@ -1,10 +1,9 @@
 package com.smart.parking.lot.smart.parking.lot.service;
 
 import com.smart.parking.lot.smart.parking.lot.entity.CurrentTicketState;
-import com.smart.parking.lot.smart.parking.lot.entity.ParkingSlot;
 import com.smart.parking.lot.smart.parking.lot.entity.ParkingTicket;
-import com.smart.parking.lot.smart.parking.lot.repository.ParkingSlotRepository;
 import com.smart.parking.lot.smart.parking.lot.repository.ParkingTicketRepository;
+import com.smart.parking.lot.smart.parking.lot.visitor.OverstayScanVisitor;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +23,11 @@ public class TicketService {
         ticket.setStatus(CurrentTicketState.ACTIVE);
         ticket.setActive(true);
         ticket.setCheckInTime(new Date());
+        return parkingTicketRepository.save(ticket);
+    }
+
+    @Transactional
+    public ParkingTicket saveTicket(ParkingTicket ticket) {
         return parkingTicketRepository.save(ticket);
     }
 
@@ -66,5 +70,13 @@ public class TicketService {
 
     public List<ParkingTicket> getTicketsBySlot(String slotId) {
         return parkingTicketRepository.findByParkingSlot_SlotId(slotId);
+    }
+
+    public List<ParkingTicket> scanOverstayed() {
+        OverstayScanVisitor visitor = new OverstayScanVisitor();
+        for (ParkingTicket t : parkingTicketRepository.findAll()) {
+            visitor.visit(t);
+        }
+        return visitor.getOverstayed();
     }
 }

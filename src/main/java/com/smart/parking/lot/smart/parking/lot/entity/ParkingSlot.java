@@ -25,8 +25,13 @@ public class ParkingSlot {
      @NotNull
      private String slotId;
 
+     @Version
+     private Long version;
+
      @NotNull
      private String slotNumber;
+
+     private java.time.Duration allocationDuration;
 
      @ManyToOne
      @JoinColumn(name = "vehicle_type_allowed_id")

@@ -23,6 +23,9 @@ public class ParkingTicket {
     @NotNull
     private String ticketId;
 
+    @Version
+    private Long version;
+
     @ManyToOne
     @NotNull
     @JoinColumn(name = "vehicle_id")

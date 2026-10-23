@@ -21,7 +21,6 @@ public class ParkingSlotController {
 
     @Autowired
     private TicketService ticketService;
-
     @PostMapping
     public ResponseEntity<ParkingSlot> addParkingSlot(@Valid @RequestBody ParkingSlot parkingSlot) {
         return new ResponseEntity<>(parkingSlotService.createParkingSlot(parkingSlot), HttpStatus.CREATED);
@@ -46,7 +45,10 @@ public class ParkingSlotController {
         return new ResponseEntity<>(ticketService.getTicketsBySlot(slotId), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{slotId}")
+    @GetMapping("/scan-overstay")
+    public ResponseEntity<List<ParkingTicket>> scanOverstay() {
+        return new ResponseEntity<>(ticketService.scanOverstayed(), HttpStatus.OK);
+    }
     public ResponseEntity<Void> deleteParkingSlot(@PathVariable String slotId) {
         parkingSlotService.deleteParkingSlot(slotId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

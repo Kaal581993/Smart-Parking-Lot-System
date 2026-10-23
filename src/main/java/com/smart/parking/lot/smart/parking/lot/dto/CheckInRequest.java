@@ -6,6 +6,6 @@ import lombok.Data;
 
 public record CheckInRequest(
         @NotNull String vehicleId,
-        @NotNull String slotId,
-        @NotNull String vehicleType
+        String slotId,
+        String allocationStrategy
 ) {}

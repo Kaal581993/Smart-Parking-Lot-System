@@ -32,8 +32,9 @@ public class ParkingTicketController {
         return new ResponseEntity<>(parkingFacade.checkOut(request), HttpStatus.OK);
     }
 
-    @GetMapping("/{ticketId}")
-    public ResponseEntity<ParkingTicket> getTicket(@PathVariable String ticketId) {
-        return new ResponseEntity<>(ticketService.getTicketById(ticketId), HttpStatus.OK);
+    @PostMapping("/undo-last-checkin")
+    public ResponseEntity<Void> undoLastCheckIn() {
+        parkingFacade.undoLastCheckIn();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

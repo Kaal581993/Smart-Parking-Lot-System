@@ -37,21 +37,21 @@ public class SlotService {
     }
 
     public List<ParkingSlot> getAvailableSlots() {
-        return parkingSlotRepository.findAll().stream()
-                .filter(s -> s.isAvailable() && s.isActive())
-                .toList();
+        return parkingSlotRepository.findAvailableSlotsWithLock();
     }
 
     @Transactional
     public ParkingSlot markSlotOccupied(String slotId) {
-        ParkingSlot slot = getSlotById(slotId);
+        ParkingSlot slot = parkingSlotRepository.findByIdWithLock(slotId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Slot not found: " + slotId));
         slot.setAvailable(false);
         return parkingSlotRepository.save(slot);
     }
 
     @Transactional
     public ParkingSlot markSlotAvailable(String slotId) {
-        ParkingSlot slot = getSlotById(slotId);
+        ParkingSlot slot = parkingSlotRepository.findByIdWithLock(slotId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Slot not found: " + slotId));
         slot.setAvailable(true);
         return parkingSlotRepository.save(slot);
     }

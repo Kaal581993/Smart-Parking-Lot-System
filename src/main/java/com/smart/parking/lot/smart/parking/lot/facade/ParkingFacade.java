@@ -7,9 +7,12 @@ import com.smart.parking.lot.smart.parking.lot.entity.ParkingSlot;
 import com.smart.parking.lot.smart.parking.lot.entity.ParkingTicket;
 import com.smart.parking.lot.smart.parking.lot.entity.VehicleDetails;
 import com.smart.parking.lot.smart.parking.lot.service.FeeService;
+import com.smart.parking.lot.smart.parking.lot.service.SlotAllocationService;
 import com.smart.parking.lot.smart.parking.lot.service.SlotService;
 import com.smart.parking.lot.smart.parking.lot.service.TicketService;
+import com.smart.parking.lot.smart.parking.lot.observer.SlotAvailabilityObserver;
 import com.smart.parking.lot.smart.parking.lot.service.VehicleDetailsService;
+import com.smart.parking.lot.smart.parking.lot.state.TicketStateContext;
 import com.smart.parking.lot.smart.parking.lot.template.CheckInCheckOutTemplate;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,23 +36,40 @@ public class ParkingFacade extends CheckInCheckOutTemplate {
     @Autowired
     private VehicleDetailsService vehicleDetailsService;
 
+    @Autowired
+    private SlotAvailabilityObserver slotAvailabilityObserver;
+
+    @Autowired
+    private SlotAllocationService slotAllocationService;
+
+    private final com.smart.parking.lot.smart.parking.lot.memento.ParkingMementoCaretaker mementoCaretaker =
+            new com.smart.parking.lot.smart.parking.lot.memento.ParkingMementoCaretaker();
+
     @Override
     protected void validateRequest(CheckInRequest request) {
-        if (request.vehicleId() == null || request.slotId() == null) {
-            throw new IllegalArgumentException("Vehicle ID and Slot ID are required");
+        if (request.vehicleId() == null) {
+            throw new IllegalArgumentException("Vehicle ID is required");
         }
     }
 
     @Override
     protected ParkingSlot allocateSlot(CheckInRequest request) {
-        ParkingSlot slot = slotService.getSlotById(request.slotId());
-        if (!slot.isAvailable()) {
-            throw new IllegalStateException("Slot is not available: " + request.slotId());
+        VehicleDetails vehicle = validateVehicle(request);
+        if (request.slotId() != null) {
+            ParkingSlot slot = slotService.getSlotById(request.slotId());
+            if (!slot.isAvailable()) {
+                throw new IllegalStateException("Slot is not available: " + request.slotId());
+            }
+            if (ticketService.isSlotOccupied(request.slotId())) {
+                throw new IllegalStateException("Slot already has an active ticket");
+            }
+            return slot;
         }
-        if (ticketService.isSlotOccupied(request.slotId())) {
-            throw new IllegalStateException("Slot already has an active ticket");
+        ParkingSlot allocated = slotAllocationService.allocate(vehicle.getVehicleType(), request.allocationStrategy());
+        if (allocated == null) {
+            throw new IllegalStateException("No available slot for vehicle type: " + vehicle.getVehicleType().getTypeName());
         }
-        return slot;
+        return allocated;
     }
 
     @Override
@@ -80,13 +100,22 @@ public class ParkingFacade extends CheckInCheckOutTemplate {
     @Override
     @Transactional
     protected void persistTicket(ParkingTicket ticket) {
-        ticketService.createTicket(ticket);
-        slotService.markSlotOccupied(ticket.getParkingSlot().getSlotId());
+        ticketService.saveTicket(ticket);
+        if (ticket.getCheckOutTime() == null) {
+            slotService.markSlotOccupied(ticket.getParkingSlot().getSlotId());
+            mementoCaretaker.push(new com.smart.parking.lot.smart.parking.lot.memento.ParkingTicketMemento(
+                    ticket.getTicketId(), ticket.getParkingSlot().getSlotId(), false));
+        }
     }
 
     @Override
     protected void notifyObservers(ParkingSlot slot, ParkingTicket ticket) {
-        // Observer notifications are handled via facade methods
+        if (ticket.getCheckOutTime() == null) {
+            slotAvailabilityObserver.onSlotOccupied(slot, ticket);
+        } else {
+            slotAvailabilityObserver.onSlotAvailable(slot);
+            slotAvailabilityObserver.onPaymentCompleted(ticket);
+        }
     }
 
     @Override
@@ -96,9 +125,11 @@ public class ParkingFacade extends CheckInCheckOutTemplate {
 
     @Override
     protected void validateTicketForCheckout(ParkingTicket ticket) {
-        if (ticket.getStatus() != CurrentTicketState.ACTIVE) {
+        TicketStateContext context = new TicketStateContext(ticket.getStatus());
+        if (!context.canCheckOut()) {
             throw new IllegalStateException("Ticket is not ACTIVE. Cannot check out.");
         }
+        context.checkOut(ticket);
     }
 
     @Override
@@ -109,5 +140,18 @@ public class ParkingFacade extends CheckInCheckOutTemplate {
     @Override
     protected void releaseSlot(ParkingTicket ticket) {
         slotService.markSlotAvailable(ticket.getParkingSlot().getSlotId());
+    }
+
+    @Transactional
+    public void undoLastCheckIn() {
+        com.smart.parking.lot.smart.parking.lot.memento.ParkingTicketMemento memento = mementoCaretaker.pop();
+        if (memento == null) {
+            throw new IllegalStateException("No check-in to undo");
+        }
+        ParkingTicket ticket = ticketService.getTicketById(memento.getTicketId());
+        ticket.setStatus(CurrentTicketState.CANCELLED);
+        ticket.setActive(false);
+        ticketService.saveTicket(ticket);
+        slotService.markSlotAvailable(memento.getSlotId());
     }
 }
