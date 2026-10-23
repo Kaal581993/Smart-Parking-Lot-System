@@ -31,6 +31,7 @@ public class VehicleDetails {
     @JoinColumn(name = "owner_id")
     private VehicleOwner owner;
 
+
     private String vehicleBrand;
     private String vehicleModel;
 

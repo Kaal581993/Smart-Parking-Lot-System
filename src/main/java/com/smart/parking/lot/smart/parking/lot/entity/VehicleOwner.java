@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "vehicle_owner")
@@ -33,13 +34,13 @@ public class VehicleOwner {
      private OwnerIdentityId ownerIdentityId;
 
      @OneToOne
-     @JoinColumn(name = "owner_aadhar_no")
+     @JoinColumn(name = "owner_aadhar_no", unique = true, nullable = false)
      @MapsId("aadharNo")
      @NotNull
      private OwnerAadhaar aadhaar;  // The relationship
 
      @OneToOne
-     @JoinColumn(name = "owner_license_no")
+     @JoinColumn(name = "owner_license_no", unique = true, nullable = false)
      @MapsId("licenseNo")
      @NotNull
      private LicenseNo licenseNo;  // The relationship
@@ -51,6 +52,9 @@ public class VehicleOwner {
      @NotNull
      private Date vehicleOwnerDOB;
 
+
+     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+     private List<VehicleDetails> vehicles;
 
      @OneToOne
      @JoinColumn(name = "owner_address")

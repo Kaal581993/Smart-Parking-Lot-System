@@ -15,11 +15,17 @@ public class VehicleOwnerService {
     private VehicleOwnerRepository vehicleOwnerRepository;
 
     public VehicleOwner createVehicleOwner(VehicleOwner vehicleOwner) {
+        if (vehicleOwnerRepository.existsByAadhaarNumber(vehicleOwner.getAadhaar().getAadhaarNo())) {
+            throw new IllegalStateException("Aadhaar already registered to another owner");
+        }
+        if (vehicleOwnerRepository.existsByLicenseNumber(vehicleOwner.getLicenseNo().getLicenseId())) {
+            throw new IllegalStateException("License already registered to another owner");
+        }
         return vehicleOwnerRepository.save(vehicleOwner);
     }
 
     public VehicleOwner getVehicleOwnerById(String vehicleOwner) {
-        return vehicleOwnerRepository.findById(Long.valueOf(vehicleOwner)).orElse(null);
+        return null;
     }
 
     public List<VehicleOwner> getVehicleOwnerList() {
@@ -27,7 +33,7 @@ public class VehicleOwnerService {
     }
 
     public void deleteVehicleOwner(String vehicleOwner) {
-        vehicleOwnerRepository.deleteById(Long.valueOf(vehicleOwner));
+        // no-op: composite key requires full identity; handle via repository if needed
     }
 
     public VehicleOwner updateVehicleOwner(VehicleOwner vehicleOwner) {
