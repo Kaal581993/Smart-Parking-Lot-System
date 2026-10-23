@@ -33,6 +33,11 @@ public class VehicleDetailsController {
         return new ResponseEntity<>(vehicleDetailsService.getVehicleDetailsList(), org.springframework.http.HttpStatus.OK);
     }
 
+    @PutMapping("/update_vehicle_details/{vehicleDetailsId}")
+    public ResponseEntity<VehicleDetails> updateVehicleDetails(@PathVariable String vehicleDetailsId, @Valid @RequestBody VehicleDetails vehicleDetails) {
+        return new ResponseEntity<>(vehicleDetailsService.updateVehicleDetails(vehicleDetails), org.springframework.http.HttpStatus.OK);
+    }
+
     @DeleteMapping("/delete_vehicle_details/{vehicleDetailsId}")
     public ResponseEntity<Void> deleteVehicleDetails(@PathVariable String vehicleDetailsId) {
         vehicleDetailsService.deleteVehicleDetails(vehicleDetailsId);

@@ -19,7 +19,7 @@ public class VehicleTypeService {
     }
 
     public VehicleType getVehicleTypeById(String vehicleTypeId) {
-        return vehicleTypeRepository.findById(Long.valueOf(vehicleTypeId)).orElse(null);
+        return vehicleTypeRepository.findById(vehicleTypeId).orElse(null);
     }
 
     public List<VehicleType> getVehicleTypeList() {
@@ -27,7 +27,7 @@ public class VehicleTypeService {
     }
 
     public void deleteVehicleType(String vehicleTypeId) {
-        vehicleTypeRepository.deleteById(Long.valueOf(vehicleTypeId));
+        vehicleTypeRepository.deleteById(vehicleTypeId);
     }
 
     public VehicleType updateVehicleType(VehicleType vehicleType) {

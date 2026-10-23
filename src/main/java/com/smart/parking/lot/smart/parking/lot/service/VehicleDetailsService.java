@@ -14,11 +14,18 @@ public class VehicleDetailsService {
     private VehicleDetailsRepository vehicleDetailsRepository;
 
     public VehicleDetails createVehicleDetails(VehicleDetails vehicleDetails) {
+        if (vehicleDetails.getNumberPlate() != null
+                && vehicleDetailsRepository.existsByNumberPlate(vehicleDetails.getNumberPlate())) {
+            throw new IllegalStateException("Number plate already registered to another vehicle");
+        }
+        if (vehicleDetails.getOwner() == null) {
+            throw new IllegalArgumentException("Vehicle must be tied to an owner");
+        }
         return vehicleDetailsRepository.save(vehicleDetails);
     }
 
     public VehicleDetails getVehicleDetailsById(String vehicleDetailsId) {
-        return vehicleDetailsRepository.findById(Long.valueOf(vehicleDetailsId)).orElse(null);
+        return vehicleDetailsRepository.findById(vehicleDetailsId).orElse(null);
     }
 
     public List<VehicleDetails> getVehicleDetailsList() {
@@ -26,7 +33,7 @@ public class VehicleDetailsService {
     }
 
     public void deleteVehicleDetails(String vehicleDetailsId) {
-        vehicleDetailsRepository.deleteById(Long.valueOf(vehicleDetailsId));
+        vehicleDetailsRepository.deleteById(vehicleDetailsId);
     }
 
     public VehicleDetails updateVehicleDetails(VehicleDetails vehicleDetails) {
