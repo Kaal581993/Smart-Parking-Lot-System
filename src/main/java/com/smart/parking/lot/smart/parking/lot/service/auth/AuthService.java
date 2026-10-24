@@ -13,9 +13,11 @@ import jakarta.annotation.PostConstruct;
 
 import java.util.Map;
 import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -85,16 +87,24 @@ public class AuthService {
     }
 
     public Role createRole(String name) {
+        return createRole(name, null);
+    }
+
+    @Transactional
+    public Role createRole(String name, Set<Long> privilegeIds) {
         if (roleRepository.findByName(name).isPresent()) {
             throw new IllegalStateException("Role already exists");
         }
-        return roleRepository.save(new Role(null, name, new java.util.HashSet<>()));
+        Role role = new Role(null, name, new HashSet<>());
+        role.setPrivileges(resolvePrivileges(privilegeIds));
+        return roleRepository.save(role);
     }
 
     public List<Role> getRoles() {
         return roleRepository.findAll();
     }
 
+    @Transactional
     public Role updateRole(Long id, String name, Set<Long> privilegeIds) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Role not found"));
@@ -106,7 +116,7 @@ public class AuthService {
         }
         if (privilegeIds != null) {
             role.getPrivileges().clear();
-            privilegeIds.forEach(privilegeId -> privilegeRepository.findById(privilegeId).ifPresent(role.getPrivileges()::add));
+            role.getPrivileges().addAll(resolvePrivileges(privilegeIds));
         }
         return roleRepository.save(role);
     }
@@ -142,6 +152,7 @@ public class AuthService {
         privilegeRepository.deleteById(id);
     }
 
+    @Transactional
     public Role assignPrivilegeToRole(String roleName, String privilegeName) {
         Role role = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new IllegalArgumentException("Role not found"));
@@ -149,6 +160,18 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("Privilege not found"));
         role.getPrivileges().add(privilege);
         return roleRepository.save(role);
+    }
+
+    private Set<Privilege> resolvePrivileges(Set<Long> privilegeIds) {
+        if (privilegeIds == null || privilegeIds.isEmpty()) {
+            return new HashSet<>();
+        }
+
+        List<Privilege> privileges = privilegeRepository.findAllById(privilegeIds);
+        if (privileges.size() != privilegeIds.size()) {
+            throw new IllegalArgumentException("One or more selected privileges do not exist");
+        }
+        return new HashSet<>(privileges);
     }
 
     public AppUser createUser(String username, String password, String roleName, String ownerId) {

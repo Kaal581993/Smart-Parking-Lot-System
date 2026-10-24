@@ -48,11 +48,7 @@ public class AuthController {
 
     @PostMapping("/admin/roles")
     public ResponseEntity<Role> createRole(@RequestBody Map<String, Object> body) {
-        Role role = authService.createRole(String.valueOf(body.get("name")));
-        Set<Long> privilegeIds = longSet(body.get("privilegeIds"));
-        if (privilegeIds != null && role.getId() != null) {
-            role = authService.updateRole(role.getId(), role.getName(), privilegeIds);
-        }
+        Role role = authService.createRole(String.valueOf(body.get("name")), longSet(body.get("privilegeIds")));
         return new ResponseEntity<>(role, HttpStatus.CREATED);
     }
 

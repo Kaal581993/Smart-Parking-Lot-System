@@ -58,6 +58,7 @@ type FieldType =
   | 'password'
   | 'date'
   | 'select'
+  | 'address'
   | 'radio'
   | 'checkbox'
   | 'multiselect'
@@ -305,6 +306,8 @@ function relationId(value: unknown, ...keys: string[]): string {
 
 function apiError(error: unknown): string {
   if (isAxiosError(error)) {
+    if (error.response?.status === 403) return 'You do not have the privilege required for this action.'
+    if (error.response?.status === 401) return 'Your session has expired. Sign in again to continue.'
     const responseData = error.response?.data
     if (typeof responseData === 'string' && responseData.trim()) return responseData
     if (responseData && typeof responseData === 'object') {
@@ -482,7 +485,7 @@ const RESOURCE_DEFINITIONS: Record<ResourceKey, ResourceDefinition> = {
       { name: 'dateOfBirth', label: 'Date of birth', type: 'date', required: true },
       { name: 'email', label: 'Email', type: 'email', required: true },
       { name: 'phone', label: 'Phone', type: 'text' },
-      { name: 'addressId', label: 'Address', type: 'select', required: true, options: addressOptions },
+      { name: 'addressId', label: 'Address', type: 'address', required: true, helpText: 'Add the address here and it will be linked to this Aadhaar record.' },
       { name: 'panNo', label: 'PAN', required: true },
     ],
     getFormValues: (record) => ({
@@ -976,6 +979,120 @@ function detailEntries(record: AnyRecord, prefix = '', depth = 0): Array<{ label
   return entries
 }
 
+type AddressDraft = {
+  flatNoHouseNo: string
+  societyNameAptName: string
+  areaName: string
+  townOrCityName: string
+  stateCode: string
+  countryName: string
+  pincode: string
+}
+
+const EMPTY_ADDRESS_DRAFT: AddressDraft = {
+  flatNoHouseNo: '',
+  societyNameAptName: '',
+  areaName: '',
+  townOrCityName: '',
+  stateCode: '',
+  countryName: 'India',
+  pincode: '',
+}
+
+function addressSummary(record: AnyRecord): string {
+  return [
+    record.flatNoHouseNo,
+    record.societyNameAptName,
+    record.areaName,
+    record.townOrCityName,
+    record.stateCode,
+    record.countryName,
+    record.pincode,
+  ].map(stringValue).filter(Boolean).join(', ')
+}
+
+function AddressInlineField({
+  value,
+  context,
+  onChange,
+}: {
+  value: FormValue
+  context: FormContext
+  onChange: (value: FormValue) => void
+}) {
+  const [adding, setAdding] = useState(false)
+  const [draft, setDraft] = useState<AddressDraft>(EMPTY_ADDRESS_DRAFT)
+  const [createdAddress, setCreatedAddress] = useState<AnyRecord | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const selectedId = stringValue(value)
+  const linkedAddress = createdAddress?.addressId
+    ? createdAddress
+    : context.records.addresses.find((record) => stringValue(record.addressId) === selectedId)
+
+  const updateDraft = (field: keyof AddressDraft, nextValue: string) => {
+    setDraft((current) => ({ ...current, [field]: nextValue }))
+  }
+
+  const createAddress = async () => {
+    if (Object.values(draft).some((field) => !field.trim())) {
+      setError('Complete every address field before saving.')
+      return
+    }
+
+    setSaving(true)
+    setError('')
+    try {
+      const response = await client.post('/address/add_address', draft)
+      const created = asRecord(response.data)
+      const addressId = stringValue(created.addressId)
+      if (!addressId) throw new Error('The address was created without an address ID.')
+      setCreatedAddress(created)
+      onChange(addressId)
+      setDraft(EMPTY_ADDRESS_DRAFT)
+      setAdding(false)
+    } catch (requestError) {
+      setError(apiError(requestError))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="address-inline">
+      {linkedAddress ? (
+        <div className="address-inline__selected">
+          <strong>{addressSummary(linkedAddress) || 'Linked address'}</strong>
+          <span>{selectedId}</span>
+        </div>
+      ) : (
+        <div className="address-inline__empty">No address linked yet.</div>
+      )}
+      <button className="button button--ghost address-inline__button" type="button" onClick={() => { setAdding((current) => !current); setError('') }}>
+        <Plus size={15} /> {adding ? 'Close address form' : linkedAddress ? 'Add different address' : 'Add address'}
+      </button>
+      {adding ? (
+        <div className="address-inline__form">
+          <div className="address-inline__grid">
+            <label>Flat / house number<input value={draft.flatNoHouseNo} onChange={(event) => updateDraft('flatNoHouseNo', event.target.value)} /></label>
+            <label>Society / apartment<input value={draft.societyNameAptName} onChange={(event) => updateDraft('societyNameAptName', event.target.value)} /></label>
+            <label>Area<input value={draft.areaName} onChange={(event) => updateDraft('areaName', event.target.value)} /></label>
+            <label>Town / city<input value={draft.townOrCityName} onChange={(event) => updateDraft('townOrCityName', event.target.value)} /></label>
+            <label>State<select value={draft.stateCode} onChange={(event) => updateDraft('stateCode', event.target.value)}><option value="">Select state</option>{STATE_OPTIONS.map((option) => <option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
+            <label>Country<input value={draft.countryName} onChange={(event) => updateDraft('countryName', event.target.value)} /></label>
+            <label>Pincode<input value={draft.pincode} onChange={(event) => updateDraft('pincode', event.target.value)} /></label>
+          </div>
+          {error ? <div className="form-error address-inline__error">{error}</div> : null}
+          <button className="button button--primary" type="button" onClick={() => void createAddress()} disabled={saving}>
+            {saving ? <LoaderCircle size={15} className="spin" /> : <Check size={15} />}
+            {saving ? 'Saving address…' : 'Save address'}
+          </button>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 function RecordDetails({ record }: { record: AnyRecord }) {
   const details = detailEntries(record)
   return (
@@ -1032,25 +1149,40 @@ function FieldControl({
 
   if (field.type === 'multiselect') {
     const selected = Array.isArray(value) ? value : []
+    const allSelected = options.length > 0 && options.every((option) => selected.includes(option.value))
     return (
-      <div className="multi-select-grid">
-        {options.length === 0 ? <div className="empty-inline">Create privileges first.</div> : null}
-        {options.map((option) => {
-          const checked = selected.includes(option.value)
-          return (
-            <label className={`multi-select-card ${checked ? 'multi-select-card--selected' : ''}`} key={option.value}>
-              <input
-                type="checkbox"
-                checked={checked}
-                onChange={() => onChange(checked ? selected.filter((item) => item !== option.value) : [...selected, option.value])}
-              />
-              <span>{option.label}</span>
-              {option.hint ? <small>{option.hint}</small> : null}
-            </label>
-          )
-        })}
+      <div className="multi-select-control">
+        <div className="multi-select-toolbar">
+          <span>{selected.length} of {options.length} selected</span>
+          {options.length > 0 ? (
+            <button className="multi-select-toolbar__action" type="button" onClick={() => onChange(allSelected ? [] : options.map((option) => option.value))}>
+              {allSelected ? 'Clear all' : 'Select all'}
+            </button>
+          ) : null}
+        </div>
+        <div className="multi-select-grid">
+          {options.length === 0 ? <div className="empty-inline">Create privileges first.</div> : null}
+          {options.map((option) => {
+            const checked = selected.includes(option.value)
+            return (
+              <label className={`multi-select-card ${checked ? 'multi-select-card--selected' : ''}`} key={option.value}>
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => onChange(checked ? selected.filter((item) => item !== option.value) : [...selected, option.value])}
+                />
+                <span>{option.label}</span>
+                {option.hint ? <small>{option.hint}</small> : null}
+              </label>
+            )
+          })}
+        </div>
       </div>
     )
+  }
+
+  if (field.type === 'address') {
+    return <AddressInlineField value={value} context={context} onChange={onChange} />
   }
 
   if (field.type === 'checkbox') {
@@ -1120,8 +1252,18 @@ function RecordFormModal({
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setSaving(true)
     setError('')
+    const missingField = definition.fields.find((field) => {
+      if (!field.required || (field.visible && !field.visible(state.mode))) return false
+      const value = values[field.name]
+      return Array.isArray(value) ? value.length === 0 : !stringValue(value).trim()
+    })
+    if (missingField) {
+      setError(`${missingField.label} is required.`)
+      return
+    }
+
+    setSaving(true)
     try {
       await onSave(values)
     } catch (saveError) {
