@@ -43,6 +43,10 @@ public class LicenseNo {
     private String serialNumber;       // NNNN: 4-digit number (0001-9999)
 
     public String getFullLicenseNumber() {
-        return String.format("%s %s %s %s", stateCode, rtoDistrictCode, seriesCode, serialNumber);
+        return String.format("%s %s %s %s",
+                stateCode != null ? stateCode.getCode() : "",
+                rtoDistrictCode,
+                seriesCode,
+                serialNumber);
     }
 }
