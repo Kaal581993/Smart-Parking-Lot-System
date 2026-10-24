@@ -21,9 +21,7 @@ public class AadhaarManagementService {
     private AddressRepository addressRepository;
 
     public OwnerAadhaar createOwnerAadhaar(OwnerAadhaar ownerAadhaar) {
-        if (ownerAadhaar.getAddress() == null && ownerAadhaar.getAddressId() != null) {
-            addressRepository.findById(ownerAadhaar.getAddressId()).ifPresent(ownerAadhaar::setAddress);
-        }
+        resolveAddress(ownerAadhaar);
         aadharRepository.save(ownerAadhaar);
         return ownerAadhaar;
     }
@@ -46,6 +44,13 @@ public class AadhaarManagementService {
     }
 
     public OwnerAadhaar updateOwnerAadhaar(OwnerAadhaar ownerAadhaar) {
+        resolveAddress(ownerAadhaar);
         return aadharRepository.save(ownerAadhaar);
+    }
+
+    private void resolveAddress(OwnerAadhaar ownerAadhaar) {
+        String addressId = ownerAadhaar.getAddressId();
+        if (addressId == null && ownerAadhaar.getAddress() != null) addressId = ownerAadhaar.getAddress().getAddressId();
+        if (addressId != null) addressRepository.findById(addressId).ifPresent(ownerAadhaar::setAddress);
     }
 }

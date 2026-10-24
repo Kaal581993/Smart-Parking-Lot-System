@@ -2,6 +2,7 @@ package com.smart.parking.lot.smart.parking.lot.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -62,5 +63,6 @@ public class ParkingSlot {
      private Date deletedAt;
 
      @OneToMany(mappedBy = "parkingSlot", cascade = CascadeType.ALL, orphanRemoval = false)
+     @JsonIgnore
      private List<ParkingTicket> tickets;
 }

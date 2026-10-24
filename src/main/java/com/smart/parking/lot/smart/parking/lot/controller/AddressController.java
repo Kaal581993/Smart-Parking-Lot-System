@@ -19,7 +19,7 @@ public class AddressController {
     private AddressManagementService addressManagementService;
 
     @PostMapping("/add_address")
-    public ResponseEntity<Address> createAddress(@Valid @RequestBody Address address) {
+    public ResponseEntity<Address> createAddress(@RequestBody Address address) {
         addressManagementService.createAddress(address);
         return new ResponseEntity<>(address, HttpStatus.CREATED);
     }
@@ -33,7 +33,7 @@ public class AddressController {
     }
 
     @PutMapping("/update_address")
-    public ResponseEntity<Address> updateAddress(@Valid @RequestBody Address address) {
+    public ResponseEntity<Address> updateAddress(@RequestBody Address address) {
         return new ResponseEntity<>(addressManagementService.updateAddress(address), HttpStatus.OK);
     }
 

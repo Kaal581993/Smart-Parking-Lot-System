@@ -6,6 +6,7 @@ import com.smart.parking.lot.smart.parking.lot.entity.CurrentTicketState;
 import com.smart.parking.lot.smart.parking.lot.entity.ParkingSlot;
 import com.smart.parking.lot.smart.parking.lot.entity.ParkingTicket;
 import com.smart.parking.lot.smart.parking.lot.repository.ParkingSlotRepository;
+import com.smart.parking.lot.smart.parking.lot.repository.VehicleTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +26,11 @@ public class ParkingSlotService {
     @Autowired
     private SlotService slotService;
 
+    @Autowired
+    private VehicleTypeRepository vehicleTypeRepository;
+
     public ParkingSlot createParkingSlot(ParkingSlot parkingSlot) {
-        return slotService.createSlot(parkingSlot);
+        return slotService.createSlot(resolveVehicleType(parkingSlot));
     }
 
     public org.springframework.data.domain.Page<ParkingSlot> getSlots(org.springframework.data.domain.Pageable pageable,
@@ -52,7 +56,7 @@ public class ParkingSlotService {
     }
 
     public ParkingSlot updateParkingSlot(ParkingSlot parkingSlot) {
-        return parkingSlotRepository.save(parkingSlot);
+        return parkingSlotRepository.save(resolveVehicleType(parkingSlot));
     }
 
     public List<ParkingSlot> getAvailableParkingSlots() {
@@ -75,6 +79,14 @@ public class ParkingSlotService {
         }
 
         return ticketService.createTicket(buildTicket(req, slot));
+    }
+
+    private ParkingSlot resolveVehicleType(ParkingSlot parkingSlot) {
+        if (parkingSlot.getVehicleTypeAllowed() != null && parkingSlot.getVehicleTypeAllowed().getTypeId() != null) {
+            parkingSlot.setVehicleTypeAllowed(vehicleTypeRepository.findById(parkingSlot.getVehicleTypeAllowed().getTypeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Vehicle type not found")));
+        }
+        return parkingSlot;
     }
 
     private ParkingTicket buildTicket(CheckInRequest req, ParkingSlot slot) {

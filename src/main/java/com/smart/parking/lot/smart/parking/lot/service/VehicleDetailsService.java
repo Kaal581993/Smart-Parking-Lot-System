@@ -4,6 +4,8 @@ package com.smart.parking.lot.smart.parking.lot.service;
 import com.smart.parking.lot.smart.parking.lot.entity.ParkingTicket;
 import com.smart.parking.lot.smart.parking.lot.entity.VehicleDetails;
 import com.smart.parking.lot.smart.parking.lot.repository.VehicleDetailsRepository;
+import com.smart.parking.lot.smart.parking.lot.repository.VehicleOwnerRepository;
+import com.smart.parking.lot.smart.parking.lot.repository.VehicleTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +21,14 @@ public class VehicleDetailsService {
     @Autowired
     private TicketService ticketService;
 
+    @Autowired
+    private VehicleTypeRepository vehicleTypeRepository;
+
+    @Autowired
+    private VehicleOwnerRepository vehicleOwnerRepository;
+
     public VehicleDetails createVehicleDetails(VehicleDetails vehicleDetails) {
+        vehicleDetails = resolveReferences(vehicleDetails);
         if (vehicleDetails.getNumberPlate() != null
                 && vehicleDetailsRepository.existsByNumberPlate(vehicleDetails.getNumberPlate())) {
             throw new IllegalStateException("Number plate already registered to another vehicle");
@@ -70,6 +79,28 @@ public class VehicleDetailsService {
     }
 
     public VehicleDetails updateVehicleDetails(VehicleDetails vehicleDetails) {
-        return vehicleDetailsRepository.save(vehicleDetails);
+        return vehicleDetailsRepository.save(resolveReferences(vehicleDetails));
+    }
+
+    private VehicleDetails resolveReferences(VehicleDetails vehicleDetails) {
+        if (vehicleDetails.getVehicleType() != null && vehicleDetails.getVehicleType().getTypeId() != null) {
+            vehicleDetails.setVehicleType(vehicleTypeRepository.findById(vehicleDetails.getVehicleType().getTypeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Vehicle type not found")));
+        }
+        if (vehicleDetails.getOwner() != null) {
+            String aadhaar = vehicleDetails.getOwner().getAadhaar() == null
+                    ? null : vehicleDetails.getOwner().getAadhaar().getAadhaarNo();
+            String license = vehicleDetails.getOwner().getLicenseNo() == null
+                    ? null : vehicleDetails.getOwner().getLicenseNo().getLicenseId();
+            if (aadhaar != null) {
+                vehicleDetails.setOwner(vehicleOwnerRepository.findByAadhaarNumber(aadhaar));
+            } else if (license != null) {
+                vehicleDetails.setOwner(vehicleOwnerRepository.findByLicenseNumber(license));
+            }
+        }
+        if (vehicleDetails.getOwner() == null) {
+            throw new IllegalArgumentException("Vehicle must be tied to an owner");
+        }
+        return vehicleDetails;
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
@@ -44,6 +45,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .anyRequest().authenticated()

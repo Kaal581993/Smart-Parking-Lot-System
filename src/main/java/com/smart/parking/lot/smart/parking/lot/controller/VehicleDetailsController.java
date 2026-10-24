@@ -22,7 +22,7 @@ public class VehicleDetailsController {
     private VehicleDetailsService vehicleDetailsService;
 
     @PostMapping
-    public ResponseEntity<VehicleDetails> addVehicleDetails(@Valid @RequestBody VehicleDetails vehicleDetails) {
+    public ResponseEntity<VehicleDetails> addVehicleDetails(@RequestBody VehicleDetails vehicleDetails) {
         return new ResponseEntity<>(vehicleDetailsService.createVehicleDetails(vehicleDetails), HttpStatus.CREATED);
     }
 
@@ -49,7 +49,8 @@ public class VehicleDetailsController {
     }
 
     @PutMapping("/{vehicleId}")
-    public ResponseEntity<VehicleDetails> updateVehicleDetails(@PathVariable String vehicleId, @Valid @RequestBody VehicleDetails vehicleDetails) {
+    public ResponseEntity<VehicleDetails> updateVehicleDetails(@PathVariable String vehicleId, @RequestBody VehicleDetails vehicleDetails) {
+        vehicleDetails.setVehicleId(vehicleId);
         return new ResponseEntity<>(vehicleDetailsService.updateVehicleDetails(vehicleDetails), HttpStatus.OK);
     }
 

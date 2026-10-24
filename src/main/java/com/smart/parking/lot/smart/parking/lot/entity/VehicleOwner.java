@@ -2,6 +2,7 @@ package com.smart.parking.lot.smart.parking.lot.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.smart.parking.lot.smart.parking.lot.entity.owner.Address;
 import com.smart.parking.lot.smart.parking.lot.entity.owner.LicenseNo;
 import com.smart.parking.lot.smart.parking.lot.entity.owner.OwnerAadhaar;
@@ -26,7 +27,7 @@ public class VehicleOwner {
      @NotNull
      private String vehicleOwnerName;
      @NotNull
-     private int vehicleOwnerPhone;
+     private long vehicleOwnerPhone;
      @NotNull
      private String vehicleOwnerEmail;
 
@@ -54,6 +55,7 @@ public class VehicleOwner {
 
 
      @OneToMany(mappedBy = "owner", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+     @JsonIgnore
      private List<VehicleDetails> vehicles;
 
      @OneToOne
@@ -61,6 +63,7 @@ public class VehicleOwner {
      @NotNull
      private Address vehicleOwnerAddress;
 
+     @JsonFormat(pattern = "dd/MM/yyyy")
      @NotNull
      private Date licenseExpiryDate;
 

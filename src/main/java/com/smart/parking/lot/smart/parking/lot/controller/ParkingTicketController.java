@@ -6,9 +6,14 @@ import com.smart.parking.lot.smart.parking.lot.dto.CheckInRequest;
 import com.smart.parking.lot.smart.parking.lot.dto.CheckOutRequest;
 import com.smart.parking.lot.smart.parking.lot.dto.PaymentRequest;
 import com.smart.parking.lot.smart.parking.lot.entity.ParkingTicket;
+import com.smart.parking.lot.smart.parking.lot.entity.VehicleDetails;
 import com.smart.parking.lot.smart.parking.lot.facade.ParkingFacade;
 import com.smart.parking.lot.smart.parking.lot.service.TicketService;
+import com.smart.parking.lot.smart.parking.lot.service.ParkingSlotService;
+import com.smart.parking.lot.smart.parking.lot.service.VehicleDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +28,23 @@ public class ParkingTicketController {
 
     @Autowired
     private TicketService ticketService;
+
+    @Autowired
+    private VehicleDetailsService vehicleDetailsService;
+
+    @Autowired
+    private ParkingSlotService parkingSlotService;
+
+    @GetMapping
+    public ResponseEntity<Page<ParkingTicket>> getTickets(Pageable pageable) {
+        return new ResponseEntity<>(ticketService.getTickets(pageable), HttpStatus.OK);
+    }
+
+    @PostMapping
+    public ResponseEntity<ParkingTicket> createManagedTicket(@RequestBody ParkingTicket ticket) {
+        resolveReferences(ticket);
+        return new ResponseEntity<>(ticketService.createManagedTicket(ticket), HttpStatus.CREATED);
+    }
 
     @PostMapping("/check-in")
     public ResponseEntity<ParkingTicket> checkIn(@Valid @RequestBody CheckInRequest request) {
@@ -55,5 +77,30 @@ public class ParkingTicketController {
     @GetMapping("/{ticketId}")
     public ResponseEntity<ParkingTicket> getTicket(@PathVariable String ticketId) {
         return new ResponseEntity<>(ticketService.getTicketById(ticketId), HttpStatus.OK);
+    }
+
+    @PutMapping("/{ticketId}")
+    public ResponseEntity<ParkingTicket> updateManagedTicket(@PathVariable String ticketId,
+                                                              @RequestBody ParkingTicket ticket) {
+        resolveReferences(ticket);
+        return new ResponseEntity<>(ticketService.updateManagedTicket(ticketId, ticket), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{ticketId}")
+    public ResponseEntity<Void> deleteManagedTicket(@PathVariable String ticketId) {
+        ticketService.deleteManagedTicket(ticketId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    private void resolveReferences(ParkingTicket ticket) {
+        if (ticket.getVehicleDetails() != null && ticket.getVehicleDetails().getVehicleId() != null) {
+            VehicleDetails vehicle = vehicleDetailsService.getVehicleDetailsById(ticket.getVehicleDetails().getVehicleId());
+            ticket.setVehicleDetails(vehicle);
+            ticket.setVehicleOwner(vehicle.getOwner());
+            ticket.setVehicleType(vehicle.getVehicleType());
+        }
+        if (ticket.getParkingSlot() != null && ticket.getParkingSlot().getSlotId() != null) {
+            ticket.setParkingSlot(parkingSlotService.getParkingSlotById(ticket.getParkingSlot().getSlotId()));
+        }
     }
 }

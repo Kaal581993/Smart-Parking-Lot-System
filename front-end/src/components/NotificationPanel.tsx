@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import SockJS from 'sockjs-client'
 import Stomp from 'stompjs'
 
@@ -10,7 +10,10 @@ interface Notification {
 
 const NotificationPanel = () => {
   const [notifications, setNotifications] = useState<Notification[]>([])
-  
+
+  const addNotification = useCallback((type: 'payment' | 'expiry' | 'slot', data: any) => {
+    setNotifications(prev => [{ type, data, timestamp: new Date() }, ...prev].slice(0, 10))
+  }, [])
 
   useEffect(() => {
     const socket = new SockJS('http://localhost:8080/ws')
@@ -39,11 +42,7 @@ const NotificationPanel = () => {
         client.disconnect()
       }
     }
-  }, [])
-
-  const addNotification = (type: 'payment' | 'expiry' | 'slot', data: any) => {
-    setNotifications(prev => [{ type, data, timestamp: new Date() }, ...prev].slice(0, 10))
-  }
+  }, [addNotification])
 
   const getNotificationText = (n: Notification) => {
     switch (n.type) {

@@ -24,7 +24,7 @@ public class ParkingSlotController {
     @Autowired
     private TicketService ticketService;
     @PostMapping
-    public ResponseEntity<ParkingSlot> addParkingSlot(@Valid @RequestBody ParkingSlot parkingSlot) {
+    public ResponseEntity<ParkingSlot> addParkingSlot(@RequestBody ParkingSlot parkingSlot) {
         return new ResponseEntity<>(parkingSlotService.createParkingSlot(parkingSlot), HttpStatus.CREATED);
     }
 
@@ -54,7 +54,7 @@ public class ParkingSlotController {
     }
     @PutMapping("/{slotId}")
     public ResponseEntity<ParkingSlot> updateParkingSlot(@PathVariable String slotId,
-                                                         @Valid @RequestBody ParkingSlot parkingSlot) {
+                                                         @RequestBody ParkingSlot parkingSlot) {
         parkingSlot.setSlotId(slotId);
         return new ResponseEntity<>(parkingSlotService.updateParkingSlot(parkingSlot), HttpStatus.OK);
     }

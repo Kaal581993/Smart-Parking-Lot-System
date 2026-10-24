@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 
 import java.util.Map;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -89,11 +91,55 @@ public class AuthService {
         return roleRepository.save(new Role(null, name, new java.util.HashSet<>()));
     }
 
+    public List<Role> getRoles() {
+        return roleRepository.findAll();
+    }
+
+    public Role updateRole(Long id, String name, Set<Long> privilegeIds) {
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+        if (name != null && !name.isBlank()) {
+            roleRepository.findByName(name)
+                    .filter(existing -> !existing.getId().equals(id))
+                    .ifPresent(existing -> { throw new IllegalStateException("Role already exists"); });
+            role.setName(name);
+        }
+        if (privilegeIds != null) {
+            role.getPrivileges().clear();
+            privilegeIds.forEach(privilegeId -> privilegeRepository.findById(privilegeId).ifPresent(role.getPrivileges()::add));
+        }
+        return roleRepository.save(role);
+    }
+
+    public void deleteRole(Long id) {
+        roleRepository.deleteById(id);
+    }
+
     public Privilege createPrivilege(String name) {
         if (privilegeRepository.findByName(name).isPresent()) {
             throw new IllegalStateException("Privilege already exists");
         }
         return privilegeRepository.save(new Privilege(null, name));
+    }
+
+    public List<Privilege> getPrivileges() {
+        return privilegeRepository.findAll();
+    }
+
+    public Privilege updatePrivilege(Long id, String name) {
+        Privilege privilege = privilegeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Privilege not found"));
+        if (name != null && !name.isBlank()) {
+            privilegeRepository.findByName(name)
+                    .filter(existing -> !existing.getId().equals(id))
+                    .ifPresent(existing -> { throw new IllegalStateException("Privilege already exists"); });
+            privilege.setName(name);
+        }
+        return privilegeRepository.save(privilege);
+    }
+
+    public void deletePrivilege(Long id) {
+        privilegeRepository.deleteById(id);
     }
 
     public Role assignPrivilegeToRole(String roleName, String privilegeName) {
@@ -117,5 +163,32 @@ public class AuthService {
         user.setRole(role);
         user.setOwnerId(ownerId);
         return appUserRepository.save(user);
+    }
+
+    public List<AppUser> getUsers() {
+        return appUserRepository.findAll();
+    }
+
+    public AppUser updateUser(Long id, String username, String password, String roleName, String ownerId) {
+        AppUser user = appUserRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (username != null && !username.isBlank() && !username.equals(user.getUsername())) {
+            appUserRepository.findByUsername(username)
+                    .filter(existing -> !existing.getId().equals(id))
+                    .ifPresent(existing -> { throw new IllegalStateException("Username already exists"); });
+            user.setUsername(username);
+        }
+        if (password != null && !password.isBlank()) user.setPassword(passwordEncoder.encode(password));
+        if (roleName != null && !roleName.isBlank()) {
+            Role role = roleRepository.findByName(roleName)
+                    .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+            user.setRole(role);
+        }
+        user.setOwnerId(ownerId);
+        return appUserRepository.save(user);
+    }
+
+    public void deleteUser(Long id) {
+        appUserRepository.deleteById(id);
     }
 }

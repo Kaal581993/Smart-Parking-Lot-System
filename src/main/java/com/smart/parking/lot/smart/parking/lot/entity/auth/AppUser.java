@@ -1,6 +1,7 @@
 package com.smart.parking.lot.smart.parking.lot.entity.auth;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ public class AppUser {
     private String username;
 
     @Column(nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @ManyToOne(fetch = FetchType.EAGER)

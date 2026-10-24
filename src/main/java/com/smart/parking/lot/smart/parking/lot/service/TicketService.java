@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class TicketService {
@@ -53,6 +55,53 @@ public class TicketService {
     public ParkingTicket getTicketById(String ticketId) {
         return parkingTicketRepository.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Ticket not found: " + ticketId));
+    }
+
+    public Page<ParkingTicket> getTickets(Pageable pageable) {
+        return parkingTicketRepository.findAll(pageable);
+    }
+
+    @Transactional
+    public ParkingTicket createManagedTicket(ParkingTicket ticket) {
+        if (ticket.getCheckInTime() == null) ticket.setCheckInTime(new Date());
+        if (ticket.getStatus() == null) ticket.setStatus(CurrentTicketState.ACTIVE);
+        if (ticket.getPaidStatus() == null) ticket.setPaidStatus(com.smart.parking.lot.smart.parking.lot.entity.PaymentStatus.PENDING);
+        ticket.setActive(true);
+        ticket.setDeleted(false);
+        return parkingTicketRepository.save(ticket);
+    }
+
+    @Transactional
+    public ParkingTicket updateManagedTicket(String ticketId, ParkingTicket incoming) {
+        ParkingTicket ticket = getTicketById(ticketId);
+        if (incoming.getVehicleDetails() != null) ticket.setVehicleDetails(incoming.getVehicleDetails());
+        if (incoming.getParkingSlot() != null) ticket.setParkingSlot(incoming.getParkingSlot());
+        if (incoming.getVehicleOwner() != null) ticket.setVehicleOwner(incoming.getVehicleOwner());
+        if (incoming.getVehicleType() != null) ticket.setVehicleType(incoming.getVehicleType());
+        if (incoming.getCheckInTime() != null) ticket.setCheckInTime(incoming.getCheckInTime());
+        ticket.setCheckOutTime(incoming.getCheckOutTime());
+        ticket.setParkingDuration(incoming.getParkingDuration());
+        ticket.setHourlyRate(incoming.getHourlyRate());
+        ticket.setBaseFee(incoming.getBaseFee());
+        ticket.setExcessFee(incoming.getExcessFee());
+        ticket.setTax(incoming.getTax());
+        ticket.setTotalFee(incoming.getTotalFee());
+        ticket.setPendingDues(incoming.getPendingDues());
+        if (incoming.getPaidStatus() != null) ticket.setPaidStatus(incoming.getPaidStatus());
+        if (incoming.getStatus() != null) ticket.setStatus(incoming.getStatus());
+        ticket.setActive(incoming.isActive());
+        ticket.setDeleted(incoming.isDeleted());
+        ticket.setCreatedBy(incoming.getCreatedBy());
+        return parkingTicketRepository.save(ticket);
+    }
+
+    @Transactional
+    public void deleteManagedTicket(String ticketId) {
+        ParkingTicket ticket = getTicketById(ticketId);
+        ticket.setDeleted(true);
+        ticket.setActive(false);
+        ticket.setStatus(CurrentTicketState.CANCELLED);
+        parkingTicketRepository.save(ticket);
     }
 
     public boolean isSlotOccupied(String slotId) {
