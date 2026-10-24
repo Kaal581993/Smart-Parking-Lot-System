@@ -57,6 +57,8 @@ public class VehicleDetailsController {
     public ResponseEntity<BatchVehicleResponse> batchCreate(@Valid @RequestBody BatchVehicleRequest request) {
         return new ResponseEntity<>(vehicleDetailsService.batchCreateVehicles(request), HttpStatus.CREATED);
     }
+
+    @DeleteMapping("/{vehicleId}")
     public ResponseEntity<Void> deleteVehicleDetails(@PathVariable String vehicleId) {
         vehicleDetailsService.deleteVehicleDetails(vehicleId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

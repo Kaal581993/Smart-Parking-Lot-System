@@ -70,6 +70,8 @@ public class VehicleOwnerController {
                                                             @Valid @RequestBody VehicleOwner vehicleOwner) {
         return new ResponseEntity<>(vehicleOwnerService.updateVehicleOwnerByAadhaarNumber(aadhaarNumber, vehicleOwner), HttpStatus.OK);
     }
+
+    @DeleteMapping("/{aadhaarNumber}")
     public ResponseEntity<Void> deleteVehicleOwner(@PathVariable String aadhaarNumber) {
         VehicleOwner owner = vehicleOwnerService.getVehicleOwnerByAadhaarNumber(aadhaarNumber);
         vehicleOwnerService.deleteVehicleOwner(owner != null ? owner.getAadhaar().getAadhaarNo() : aadhaarNumber);
