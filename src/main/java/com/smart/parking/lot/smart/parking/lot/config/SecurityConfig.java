@@ -50,31 +50,31 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/login", "/auth/register-owner").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/admin/roles").hasAnyAuthority(
-                                "ROLE_ADMIN", "READ_ROLES", "MANAGE_ROLES")
+                                "ROLE_ADMIN", "READ_ROLES", "ROLE_READ", "MANAGE_ROLES")
                         .requestMatchers(HttpMethod.POST, "/auth/admin/roles/*/privileges/*").hasAnyAuthority(
-                                "ROLE_ADMIN", "ASSIGN_ROLE_PRIVILEGES", "MANAGE_ROLES")
+                                "ROLE_ADMIN", "ASSIGN_ROLE_PRIVILEGES", "PRIVILEGE_ASSIGN", "MANAGE_ROLES")
                         .requestMatchers(HttpMethod.POST, "/auth/admin/roles").hasAnyAuthority(
-                                "ROLE_ADMIN", "CREATE_ROLES", "MANAGE_ROLES")
+                                "ROLE_ADMIN", "CREATE_ROLES", "ROLE_CREATE", "MANAGE_ROLES")
                         .requestMatchers(HttpMethod.PUT, "/auth/admin/roles/*").hasAnyAuthority(
-                                "ROLE_ADMIN", "UPDATE_ROLES", "MANAGE_ROLES")
+                                "ROLE_ADMIN", "UPDATE_ROLES", "ROLE_UPDATE", "MANAGE_ROLES")
                         .requestMatchers(HttpMethod.DELETE, "/auth/admin/roles/*").hasAnyAuthority(
-                                "ROLE_ADMIN", "DELETE_ROLES", "MANAGE_ROLES")
+                                "ROLE_ADMIN", "DELETE_ROLES", "ROLE_DELETE", "MANAGE_ROLES")
                         .requestMatchers(HttpMethod.GET, "/auth/admin/privileges").hasAnyAuthority(
-                                "ROLE_ADMIN", "READ_PRIVILEGES", "MANAGE_PRIVILEGES")
+                                "ROLE_ADMIN", "READ_PRIVILEGES", "PRIVILEGE_READ", "MANAGE_PRIVILEGES")
                         .requestMatchers(HttpMethod.POST, "/auth/admin/privileges").hasAnyAuthority(
-                                "ROLE_ADMIN", "CREATE_PRIVILEGES", "MANAGE_PRIVILEGES")
+                                "ROLE_ADMIN", "CREATE_PRIVILEGES", "PRIVILEGE_CREATE", "MANAGE_PRIVILEGES")
                         .requestMatchers(HttpMethod.PUT, "/auth/admin/privileges/*").hasAnyAuthority(
-                                "ROLE_ADMIN", "UPDATE_PRIVILEGES", "MANAGE_PRIVILEGES")
+                                "ROLE_ADMIN", "UPDATE_PRIVILEGES", "PRIVILEGE_UPDATE", "MANAGE_PRIVILEGES")
                         .requestMatchers(HttpMethod.DELETE, "/auth/admin/privileges/*").hasAnyAuthority(
-                                "ROLE_ADMIN", "DELETE_PRIVILEGES", "MANAGE_PRIVILEGES")
+                                "ROLE_ADMIN", "DELETE_PRIVILEGES", "PRIVILEGE_DELETE", "MANAGE_PRIVILEGES")
                         .requestMatchers(HttpMethod.GET, "/auth/admin/users").hasAnyAuthority(
-                                "ROLE_ADMIN", "READ_USERS", "MANAGE_USERS")
+                                "ROLE_ADMIN", "READ_USERS", "USER_READ", "MANAGE_USERS")
                         .requestMatchers(HttpMethod.POST, "/auth/admin/users").hasAnyAuthority(
-                                "ROLE_ADMIN", "CREATE_USERS", "MANAGE_USERS")
+                                "ROLE_ADMIN", "CREATE_USERS", "USER_CREATE", "MANAGE_USERS")
                         .requestMatchers(HttpMethod.PUT, "/auth/admin/users/*").hasAnyAuthority(
-                                "ROLE_ADMIN", "UPDATE_USERS", "MANAGE_USERS")
+                                "ROLE_ADMIN", "UPDATE_USERS", "USER_UPDATE", "MANAGE_USERS")
                         .requestMatchers(HttpMethod.DELETE, "/auth/admin/users/*").hasAnyAuthority(
-                                "ROLE_ADMIN", "DELETE_USERS", "MANAGE_USERS")
+                                "ROLE_ADMIN", "DELETE_USERS", "USER_DELETE", "MANAGE_USERS")
                         .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/auth/logout").authenticated()
                         .requestMatchers("/h2-console/**").permitAll()
