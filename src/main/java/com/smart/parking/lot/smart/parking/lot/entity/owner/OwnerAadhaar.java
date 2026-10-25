@@ -1,6 +1,7 @@
 package com.smart.parking.lot.smart.parking.lot.entity.owner;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -51,6 +52,7 @@ public class OwnerAadhaar {
     private String addressId;
 
     @JsonProperty("Address")
+    @JsonAlias("address")
     @ManyToOne
     @JoinColumn(name = "addressId")
     @NotNull

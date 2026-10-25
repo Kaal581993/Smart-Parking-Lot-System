@@ -358,7 +358,7 @@ function defaultForm(fields: FieldDefinition[]): FormValues {
 }
 
 const roleOptions = (context: FormContext) => optionsFor(context.records.roles, 'name', 'name', 'id')
-const privilegeOptions = (context: FormContext) => optionsFor(context.records.privileges, 'name', 'name', 'id')
+const privilegeOptions = (context: FormContext) => optionsFor(context.records.privileges, 'id', 'name', 'id')
 const addressOptions = (context: FormContext) =>
   context.records.addresses.map((record) => ({
     value: stringValue(record.addressId),
