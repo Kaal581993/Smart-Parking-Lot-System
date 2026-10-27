@@ -1,5 +1,6 @@
 package com.smart.parking.lot.smart.parking.lot.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import com.smart.parking.lot.smart.parking.lot.entity.util.IdGenerator;
 import jakarta.persistence.*;
@@ -13,7 +14,7 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 @Table(name = "vehicle_type")
 @Data
-@NoArgsConstructor
+@NoArgsConstructor(onConstructor_ = @JsonCreator)
 @AllArgsConstructor
 @Builder
 public class VehicleType {

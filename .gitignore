@@ -38,3 +38,6 @@ data/
 *.mv.db
 *.trace.db
 *.lock.db
+
+### Local dummy-owner credentials ###
+/password.txt

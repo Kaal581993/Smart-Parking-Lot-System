@@ -48,14 +48,12 @@ public class OwnerAadhaar {
 
     @Transient
     @JsonProperty("addressId")
-    @NotNull
     private String addressId;
 
     @JsonProperty("Address")
     @JsonAlias("address")
     @ManyToOne
-    @JoinColumn(name = "addressId")
-    @NotNull
+    @JoinColumn(name = "addressId", nullable = false)
     private Address address;
 
     @NotNull

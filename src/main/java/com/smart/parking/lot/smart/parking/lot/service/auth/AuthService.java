@@ -66,6 +66,10 @@ public class AuthService {
         tokenStore.remove(token);
     }
 
+    public void invalidateOtherSessions(String username, String currentToken) {
+        tokenStore.entrySet().removeIf(entry -> username.equals(entry.getValue()) && !entry.getKey().equals(currentToken));
+    }
+
     public AppUser getUserByToken(String token) {
         String username = tokenStore.get(token);
         if (username == null) return null;

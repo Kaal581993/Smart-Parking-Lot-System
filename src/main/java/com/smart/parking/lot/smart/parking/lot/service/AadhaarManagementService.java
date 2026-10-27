@@ -5,6 +5,7 @@ import com.smart.parking.lot.smart.parking.lot.entity.owner.OwnerAadhaar;
 import com.smart.parking.lot.smart.parking.lot.entity.owner.Address;
 import com.smart.parking.lot.smart.parking.lot.repository.owner.AadharRepository;
 import com.smart.parking.lot.smart.parking.lot.repository.owner.AddressRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +52,18 @@ public class AadhaarManagementService {
     private void resolveAddress(OwnerAadhaar ownerAadhaar) {
         String addressId = ownerAadhaar.getAddressId();
         if (addressId == null && ownerAadhaar.getAddress() != null) addressId = ownerAadhaar.getAddress().getAddressId();
-        if (addressId != null) addressRepository.findById(addressId).ifPresent(ownerAadhaar::setAddress);
+        if (addressId == null || addressId.isBlank()) {
+            throw new IllegalArgumentException("addressId is required");
+        }
+
+        String resolvedAddressId = addressId;
+        Address address = addressRepository.findById(resolvedAddressId)
+                .orElseThrow(() -> new EntityNotFoundException("Address not found: " + resolvedAddressId));
+
+        // addressId is a transient request/response field. Keep it in sync with
+        // the managed relationship so both supported request shapes work:
+        // {"addressId":"..."} and {"address":{"addressId":"..."}}.
+        ownerAadhaar.setAddressId(resolvedAddressId);
+        ownerAadhaar.setAddress(address);
     }
 }

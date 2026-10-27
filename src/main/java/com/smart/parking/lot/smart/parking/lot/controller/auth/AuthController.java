@@ -4,6 +4,9 @@ import com.smart.parking.lot.smart.parking.lot.entity.auth.AppUser;
 import com.smart.parking.lot.smart.parking.lot.entity.auth.Role;
 import com.smart.parking.lot.smart.parking.lot.entity.auth.Privilege;
 import com.smart.parking.lot.smart.parking.lot.service.auth.AuthService;
+import com.smart.parking.lot.smart.parking.lot.security.ResourceAccessPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,14 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @GetMapping("/me")
+    public Map<String, Object> currentUser(Authentication authentication) {
+        return Map.of(
+                "username", authentication.getName(),
+                "authorities", authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList(),
+                "permissions", ResourceAccessPolicy.permissions(authentication.getAuthorities()));
+    }
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> body) {

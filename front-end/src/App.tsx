@@ -8,7 +8,9 @@ import Tickets from './pages/Tickets'
 import OwnerRegistration from './pages/OwnerRegistration'
 import Admin from './pages/Admin'
 import Records from './pages/Records'
+import ProfileSettings from './pages/ProfileSettings'
 import Layout from './components/layout/Layout'
+import { SessionProvider } from './auth/SessionContext'
 import './App.css'
 import './index.css'
 
@@ -22,7 +24,7 @@ const App = () => (
   <BrowserRouter>
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/" element={<Protected><Layout /></Protected>}>
+      <Route path="/" element={<Protected><SessionProvider><Layout /></SessionProvider></Protected>}>
         <Route index element={<Dashboard />} />
         <Route path="vehicles" element={<Vehicles />} />
         <Route path="slots" element={<Slots />} />
@@ -31,6 +33,7 @@ const App = () => (
         <Route path="owner-registration" element={<OwnerRegistration />} />
         <Route path="records" element={<Records />} />
         <Route path="admin" element={<Admin />} />
+        <Route path="profile" element={<ProfileSettings />} />
       </Route>
       <Route path="*" element={<Navigate to={isAuthed() ? '/' : '/login'} replace />} />
     </Routes>

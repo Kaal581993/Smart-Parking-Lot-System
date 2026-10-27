@@ -2,6 +2,7 @@ package com.smart.parking.lot.smart.parking.lot.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.smart.parking.lot.smart.parking.lot.entity.owner.Address;
 import com.smart.parking.lot.smart.parking.lot.entity.owner.LicenseNo;
@@ -19,7 +20,7 @@ import java.util.List;
 @Entity
 @Table(name = "vehicle_owner")
 @Data
-@NoArgsConstructor
+@NoArgsConstructor(onConstructor_ = @JsonCreator)
 @AllArgsConstructor
 @Builder
 public class VehicleOwner {

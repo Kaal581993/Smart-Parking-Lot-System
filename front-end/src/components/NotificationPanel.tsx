@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import SockJS from 'sockjs-client'
 import Stomp from 'stompjs'
+import { apiBaseUrl } from '../api/client'
 
 interface Notification {
   type: 'payment' | 'expiry' | 'slot'
@@ -16,7 +17,7 @@ const NotificationPanel = () => {
   }, [])
 
   useEffect(() => {
-    const socket = new SockJS('http://localhost:8080/ws')
+    const socket = new SockJS(`${apiBaseUrl}/ws`)
     const client = Stomp.over(socket)
     
     client.connect({}, () => {

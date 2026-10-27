@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import client from '../api/client'
+import { useSession } from '../auth/session'
 
 type CheckInForm = {
   vehicleId: string
@@ -10,6 +11,10 @@ type CheckInForm = {
 }
 
 const CheckIn = () => {
+  const { hasAuthority } = useSession()
+  const canCheckIn = hasAuthority('CHECK_IN_TICKETS', 'CREATE_PARKING_TICKETS', 'MANAGE_PARKING_TICKETS')
+  const canCheckOut = hasAuthority('CHECK_OUT_TICKETS', 'UPDATE_PARKING_TICKETS', 'MANAGE_PARKING_TICKETS')
+  const canPay = hasAuthority('PAY_TICKETS', 'UPDATE_PARKING_TICKETS', 'MANAGE_PARKING_TICKETS')
   const [form, setForm] = useState<CheckInForm>({ vehicleId: '', slotId: '', ticketId: '', payTicketId: '', amount: 0 })
   const [data, setData] = useState<unknown>(null)
   const [msg, setMsg] = useState('')
@@ -34,7 +39,7 @@ const CheckIn = () => {
         </div>
       </div>
       <div className="operation-grid">
-        <section className="legacy-card">
+        {canCheckIn ? <section className="legacy-card">
           <p className="eyebrow">01 / arrival</p>
           <h2>Check in vehicle</h2>
           <div className="legacy-form">
@@ -42,16 +47,16 @@ const CheckIn = () => {
             <label>Slot ID <span className="muted-copy">optional</span><input value={form.slotId} onChange={(event) => update('slotId', event.target.value)} placeholder="Automatic allocation if empty" /></label>
             <button className="button button--primary" type="button" onClick={() => void request(() => client.post('/parking_tickets/check-in', { vehicleId: form.vehicleId, slotId: form.slotId || undefined }), 'Vehicle checked in')}>Check in</button>
           </div>
-        </section>
-        <section className="legacy-card">
+        </section> : null}
+        {canCheckOut ? <section className="legacy-card">
           <p className="eyebrow">02 / departure</p>
           <h2>Check out ticket</h2>
           <div className="legacy-form">
             <label>Ticket ID<input value={form.ticketId} onChange={(event) => update('ticketId', event.target.value)} placeholder="Ticket ID" /></label>
             <button className="button button--ghost" type="button" onClick={() => void request(() => client.post(`/parking_tickets/${form.ticketId}/check-out`), 'Ticket checked out')}>Check out</button>
           </div>
-        </section>
-        <section className="legacy-card">
+        </section> : null}
+        {canPay ? <section className="legacy-card">
           <p className="eyebrow">03 / settlement</p>
           <h2>Record payment</h2>
           <div className="legacy-form">
@@ -59,7 +64,8 @@ const CheckIn = () => {
             <label>Amount<input type="number" min="0" value={form.amount} onChange={(event) => update('amount', Number(event.target.value))} placeholder="0.00" /></label>
             <button className="button button--ghost" type="button" onClick={() => void request(() => client.post(`/parking_tickets/${form.payTicketId}/pay`, { amount: form.amount }), 'Payment recorded')}>Record payment</button>
           </div>
-        </section>
+        </section> : null}
+        {!canCheckIn && !canCheckOut && !canPay ? <p>You do not have permission to perform ticket actions.</p> : null}
       </div>
       {msg ? <div className="notice notice--success">{msg}</div> : null}
       {data ? <pre className="json-panel">{JSON.stringify(data, null, 2)}</pre> : null}

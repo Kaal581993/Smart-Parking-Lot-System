@@ -27,19 +27,9 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import client from '../api/client'
-
-export type ResourceKey =
-  | 'owners'
-  | 'ownerAadhaar'
-  | 'users'
-  | 'roles'
-  | 'privileges'
-  | 'addresses'
-  | 'licenses'
-  | 'vehicleTypes'
-  | 'vehicles'
-  | 'parkingSlots'
-  | 'parkingTickets'
+import { useSession } from '../auth/session'
+import type { ResourceKey } from '../auth/session'
+export type { ResourceKey } from '../auth/session'
 
 type AnyRecord = Record<string, unknown>
 type FormValue = string | number | boolean | string[]
@@ -74,6 +64,7 @@ type FieldDefinition = {
   type?: FieldType
   required?: boolean
   placeholder?: string
+  pattern?: string
   helpText?: string
   defaultValue?: FormValue
   options?: (context: FormContext) => Option[]
@@ -135,6 +126,7 @@ const RESOURCE_KEYS: ResourceKey[] = [
 ]
 
 const PAGE_SIZE = 8
+const NO_RECORDS: AnyRecord[] = []
 
 const STATE_OPTIONS: Option[] = [
   { value: 'ANDHRA_PRADESH', label: 'Andhra Pradesh', hint: 'AP' },
@@ -377,6 +369,12 @@ const licenseOptions = (context: FormContext) =>
     label: stringValue(record.licenseId) || 'License',
     hint: `${stringValue(record.stateCode)} ${stringValue(record.rtoDistrictCode)}`.trim(),
   }))
+const ownerOptions = (context: FormContext) =>
+  context.records.owners.map((record) => ({
+    value: ownerAadhaar(record),
+    label: stringValue(record.vehicleOwnerName) || ownerAadhaar(record),
+    hint: ownerAadhaar(record),
+  })).filter((option) => option.value)
 const vehicleTypeOptions = (context: FormContext) =>
   optionsFor(context.records.vehicleTypes, 'typeId', 'typeName', 'hourlyRate')
 const vehicleOptions = (context: FormContext) =>
@@ -767,9 +765,9 @@ const RESOURCE_DEFINITIONS: Record<ResourceKey, ResourceDefinition> = {
     ],
     fields: [
       { name: 'vehicleId', label: 'Vehicle ID', type: 'text', readOnlyOnEdit: true, visible: (mode) => mode === 'edit' },
-      { name: 'numberPlate', label: 'Number plate', required: true, placeholder: 'MH01AB1234' },
+      { name: 'numberPlate', label: 'Number plate', required: true, placeholder: 'MH01AB1234', pattern: '[A-Za-z]{2}[0-9]{2}[A-Za-z]{1,2}[0-9]{4}', helpText: 'Use the full registration, including the letter series, for example MH10AB1234.' },
       { name: 'vehicleTypeId', label: 'Vehicle type', type: 'select', required: true, options: vehicleTypeOptions },
-      { name: 'ownerAadhaarNo', label: 'Owner', type: 'select', required: true, options: aadhaarOptions },
+      { name: 'ownerAadhaarNo', label: 'Owner', type: 'select', required: true, options: ownerOptions },
       { name: 'vehicleBrand', label: 'Brand' },
       { name: 'vehicleModel', label: 'Model' },
       { name: 'deleted', label: 'Marked deleted', type: 'checkbox' },
@@ -785,7 +783,7 @@ const RESOURCE_DEFINITIONS: Record<ResourceKey, ResourceDefinition> = {
     }),
     toPayload: (values, _context, mode) => ({
       ...(mode === 'edit' ? { vehicleId: stringValue(values.vehicleId) } : {}),
-      numberPlate: stringValue(values.numberPlate).toUpperCase(),
+      numberPlate: stringValue(values.numberPlate).trim().toUpperCase(),
       vehicleType: { typeId: stringValue(values.vehicleTypeId) },
       owner: { aadhaar: { aadhaarNo: stringValue(values.ownerAadhaarNo) } },
       vehicleBrand: stringValue(values.vehicleBrand),
@@ -1021,6 +1019,7 @@ function AddressInlineField({
   onChange: (value: FormValue) => void
 }) {
   const [adding, setAdding] = useState(false)
+  const { can } = useSession()
   const [draft, setDraft] = useState<AddressDraft>(EMPTY_ADDRESS_DRAFT)
   const [createdAddress, setCreatedAddress] = useState<AnyRecord | null>(null)
   const [saving, setSaving] = useState(false)
@@ -1035,6 +1034,7 @@ function AddressInlineField({
   }
 
   const createAddress = async () => {
+    if (!can('addresses', 'create')) return
     if (Object.values(draft).some((field) => !field.trim())) {
       setError('Complete every address field before saving.')
       return
@@ -1068,10 +1068,14 @@ function AddressInlineField({
       ) : (
         <div className="address-inline__empty">No address linked yet.</div>
       )}
-      <button className="button button--ghost address-inline__button" type="button" onClick={() => { setAdding((current) => !current); setError('') }}>
+      {can('addresses', 'read') ? <select value={selectedId} onChange={(event) => { setCreatedAddress(null); onChange(event.target.value) }} aria-label="Existing address">
+        <option value="">Select an existing address</option>
+        {context.records.addresses.map((record) => <option key={stringValue(record.addressId)} value={stringValue(record.addressId)}>{addressSummary(record)}</option>)}
+      </select> : null}
+      {can('addresses', 'create') ? <button className="button button--ghost address-inline__button" type="button" onClick={() => { setAdding((current) => !current); setError('') }}>
         <Plus size={15} /> {adding ? 'Close address form' : linkedAddress ? 'Add different address' : 'Add address'}
-      </button>
-      {adding ? (
+      </button> : null}
+      {adding && can('addresses', 'create') ? (
         <div className="address-inline__form">
           <div className="address-inline__grid">
             <label>Flat / house number<input value={draft.flatNoHouseNo} onChange={(event) => updateDraft('flatNoHouseNo', event.target.value)} /></label>
@@ -1222,6 +1226,7 @@ function FieldControl({
       value={String(value ?? '')}
       onChange={(event) => onChange(inputType === 'number' ? event.target.value : event.target.value)}
       placeholder={field.placeholder}
+      pattern={field.pattern}
       readOnly={isReadOnly}
       required={required}
       min={field.min}
@@ -1342,29 +1347,43 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
 }
 
 export default function Records({ initialResource = 'owners' }: { initialResource?: ResourceKey }) {
-  const [activeKey, setActiveKey] = useState<ResourceKey>(initialResource)
+  const { can, canAccess } = useSession()
+  const [selectedKey, setActiveKey] = useState<ResourceKey>(initialResource)
+  const availableKeys = RESOURCE_KEYS.filter(canAccess)
+  const activeKey = canAccess(selectedKey) ? selectedKey : availableKeys[0] ?? initialResource
   const [records, setRecords] = useState<Record<ResourceKey, AnyRecord[]>>(emptyRecords)
   const [loading, setLoading] = useState<Record<ResourceKey, boolean>>({} as Record<ResourceKey, boolean>)
   const [errors, setErrors] = useState<Record<ResourceKey, string>>({} as Record<ResourceKey, string>)
   const [query, setQuery] = useState('')
+  const [slotFloor, setSlotFloor] = useState('')
+  const [slotSection, setSlotSection] = useState('')
   const [page, setPage] = useState(1)
   const [expandedId, setExpandedId] = useState('')
   const [modal, setModal] = useState<ModalState | null>(null)
   const [notice, setNotice] = useState<Notice | null>(null)
 
   const loadResource = useCallback(async (key: ResourceKey) => {
+    if (!can(key, 'read')) return
     const definition = RESOURCE_DEFINITIONS[key]
     setLoading((current) => ({ ...current, [key]: true }))
     setErrors((current) => ({ ...current, [key]: '' }))
     try {
-      const response = await client.get(definition.listPath, definition.paged ? { params: { page: 0, size: 1000 } } : undefined)
-      setRecords((current) => ({ ...current, [key]: normalizeList(response.data) }))
+      const items: AnyRecord[] = []
+      let nextPage = 0
+      while (true) {
+        const response = await client.get(definition.listPath, definition.paged ? { params: { page: nextPage, size: 1000 } } : undefined)
+        const batch = normalizeList(response.data)
+        items.push(...batch)
+        if (!definition.paged || response.data.last !== false || batch.length === 0) break
+        nextPage += 1
+      }
+      setRecords((current) => ({ ...current, [key]: items }))
     } catch (error) {
       setErrors((current) => ({ ...current, [key]: apiError(error) }))
     } finally {
       setLoading((current) => ({ ...current, [key]: false }))
     }
-  }, [])
+  }, [can])
 
   const reloadAll = useCallback(async () => {
     await Promise.allSettled(RESOURCE_KEYS.map((key) => loadResource(key)))
@@ -1376,18 +1395,23 @@ export default function Records({ initialResource = 'owners' }: { initialResourc
 
   const context: FormContext = useMemo(() => ({ records }), [records])
   const definition = RESOURCE_DEFINITIONS[activeKey]
-  const activeItems = records[activeKey]
+  const activeItems = can(activeKey, 'read') ? records[activeKey] : NO_RECORDS
+  const slotFloors = useMemo(() => [...new Set(records.parkingSlots.map((slot) => Number(slot.floorNo)))].sort((a, b) => a - b), [records.parkingSlots])
+  const slotSections = useMemo(() => [...new Set(records.parkingSlots.map((slot) => stringValue(valueAt(slot, 'vehicleTypeAllowed.typeName'))).filter(Boolean))].sort(), [records.parkingSlots])
   const filteredItems = useMemo(() => {
     const normalized = query.trim().toLowerCase()
-    if (!normalized) return activeItems
-    return activeItems.filter((record) => JSON.stringify(record).toLowerCase().includes(normalized))
-  }, [activeItems, query])
+    return activeItems.filter((record) =>
+      (!normalized || JSON.stringify(record).toLowerCase().includes(normalized))
+      && (activeKey !== 'parkingSlots' || ((!slotFloor || String(record.floorNo) === slotFloor)
+        && (!slotSection || valueAt(record, 'vehicleTypeAllowed.typeName') === slotSection))))
+  }, [activeItems, query, activeKey, slotFloor, slotSection])
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE))
   const visibleItems = filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
   const isLoading = Boolean(loading[activeKey])
 
   const saveRecord = async (values: FormValues) => {
     if (!modal) return
+    if (!can(activeKey, modal.mode === 'create' ? 'create' : 'update')) throw new Error('You do not have the privilege required for this action.')
     const payload = definition.toPayload(values, context, modal.mode)
     if (modal.mode === 'create') {
       await client.post(definition.createPath, payload)
@@ -1402,6 +1426,7 @@ export default function Records({ initialResource = 'owners' }: { initialResourc
   }
 
   const deleteRecord = async (record: AnyRecord) => {
+    if (!can(activeKey, 'delete')) return
     const id = definition.id(record)
     if (!id || !window.confirm(`Delete this ${definition.label.toLowerCase()}?`)) return
     try {
@@ -1416,9 +1441,14 @@ export default function Records({ initialResource = 'owners' }: { initialResourc
   const changeResource = (key: ResourceKey) => {
     setActiveKey(key)
     setQuery('')
+    setSlotFloor('')
+    setSlotSection('')
     setPage(1)
     setExpandedId('')
+    setModal(null)
   }
+
+  if (availableKeys.length === 0) return <div className="legacy-page"><p>You do not have access to any data tables. Contact an administrator for access.</p></div>
 
   return (
     <div className="records-page">
@@ -1432,10 +1462,10 @@ export default function Records({ initialResource = 'owners' }: { initialResourc
         </div>
         <p className="records-sidebar__copy">One workspace for the owner, fleet, access, and parking records behind the lot.</p>
         <nav className="resource-nav" aria-label="Parking data tables">
-          {RESOURCE_GROUPS.map((group) => (
+          {RESOURCE_GROUPS.filter((group) => group.keys.some(canAccess)).map((group) => (
             <div className="resource-nav__group" key={group.label}>
               <span className="resource-nav__label">{group.label}</span>
-              {group.keys.map((key) => {
+              {group.keys.filter(canAccess).map((key) => {
                 const item = RESOURCE_DEFINITIONS[key]
                 const Icon = item.icon
                 return (
@@ -1459,14 +1489,25 @@ export default function Records({ initialResource = 'owners' }: { initialResourc
             <p className="records-heading__description">{definition.description}</p>
           </div>
           <div className="records-heading__actions">
-            <button className="button button--ghost" type="button" onClick={() => void loadResource(activeKey)} disabled={isLoading}>
+            {can(activeKey, 'read') ? <button className="button button--ghost" type="button" onClick={() => void loadResource(activeKey)} disabled={isLoading}>
               <RefreshCw size={16} className={isLoading ? 'spin' : ''} /> Refresh
-            </button>
-            <button className="button button--primary" type="button" onClick={() => setModal({ mode: 'create' })}>
+            </button> : null}
+            {can(activeKey, 'create') ? <button className="button button--primary" type="button" onClick={() => setModal({ mode: 'create' })}>
               <Plus size={17} /> Add {definition.label}
-            </button>
+            </button> : null}
           </div>
         </div>
+
+        {activeKey === 'parkingSlots' ? <div className="slot-section-filters">
+          <label htmlFor="slot-floor-filter">Floor<select id="slot-floor-filter" value={slotFloor} onChange={(event) => { setSlotFloor(event.target.value); setPage(1); setExpandedId('') }}>
+            <option value="">All {slotFloors.length} floors</option>
+            {slotFloors.map((floor) => <option key={floor} value={floor}>Floor {floor}</option>)}
+          </select></label>
+          <label htmlFor="slot-section-filter">Vehicle section<select id="slot-section-filter" value={slotSection} onChange={(event) => { setSlotSection(event.target.value); setPage(1); setExpandedId('') }}>
+            <option value="">All {slotSections.length} sections</option>
+            {slotSections.map((section) => <option key={section} value={section}>{section}</option>)}
+          </select></label>
+        </div> : null}
 
         <div className="records-toolbar">
           <label className="search-box">
@@ -1494,14 +1535,14 @@ export default function Records({ initialResource = 'owners' }: { initialResourc
         ) : null}
 
         <div className="records-card">
-          {isLoading && activeItems.length === 0 ? (
+          {!can(activeKey, 'read') ? <div className="empty-state"><p>You do not have permission to read these records.</p></div> : isLoading && activeItems.length === 0 ? (
             <div className="loading-state"><LoaderCircle size={24} className="spin" /><span>Loading {definition.pluralLabel.toLowerCase()}…</span></div>
           ) : visibleItems.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state__icon"><Database size={20} /></div>
               <h3>{query ? 'No matching records' : `No ${definition.pluralLabel.toLowerCase()} yet`}</h3>
-              <p>{query ? 'Try a different search term.' : `Create the first ${definition.label.toLowerCase()} to populate this table.`}</p>
-              {!query ? <button className="button button--primary" type="button" onClick={() => setModal({ mode: 'create' })}><Plus size={16} /> Add record</button> : null}
+              <p>{query ? 'Try a different search term.' : can(activeKey, 'create') ? `Create the first ${definition.label.toLowerCase()} to populate this table.` : 'There are no records to display.'}</p>
+              {!query && can(activeKey, 'create') ? <button className="button button--primary" type="button" onClick={() => setModal({ mode: 'create' })}><Plus size={16} /> Add record</button> : null}
             </div>
           ) : (
             <div className="record-table">
@@ -1535,12 +1576,12 @@ export default function Records({ initialResource = 'owners' }: { initialResourc
                         )
                       })}
                       <span className="record-actions" onClick={(event) => event.stopPropagation()}>
-                        <button className="icon-button icon-button--small" type="button" onClick={() => setModal({ mode: 'edit', record })} aria-label={`Edit ${definition.label}`} title="Edit">
+                        {can(activeKey, 'update') ? <button className="icon-button icon-button--small" type="button" onClick={() => setModal({ mode: 'edit', record })} aria-label={`Edit ${definition.label}`} title="Edit">
                           <Edit3 size={15} />
-                        </button>
-                        <button className="icon-button icon-button--small icon-button--danger" type="button" onClick={() => void deleteRecord(record)} aria-label={`Delete ${definition.label}`} title="Delete">
+                        </button> : null}
+                        {can(activeKey, 'delete') ? <button className="icon-button icon-button--small icon-button--danger" type="button" onClick={() => void deleteRecord(record)} aria-label={`Delete ${definition.label}`} title="Delete">
                           <Trash2 size={15} />
-                        </button>
+                        </button> : null}
                         {expanded ? <ChevronUp size={16} className="row-chevron" /> : <ChevronDown size={16} className="row-chevron" />}
                       </span>
                     </div>
